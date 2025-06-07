@@ -124,9 +124,10 @@ export default function ContactSection() {
               
               <button
                 type="submit"
-                className="w-full bg-deep-red hover:bg-blood-red text-white py-3 font-cinzel-regular hover-mystic"
+                disabled={contactMutation.isPending}
+                className="w-full bg-deep-red hover:bg-blood-red text-white py-3 font-cinzel-regular hover-mystic disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Enviar Invocação
+                {contactMutation.isPending ? "Enviando..." : "Enviar Invocação"}
               </button>
             </form>
           </div>
