@@ -1,4 +1,4 @@
-import { users, grimoires, courses, contacts, type User, type InsertUser, type Grimoire, type InsertGrimoire, type Course, type InsertCourse, type Contact, type InsertContact } from "@shared/schema";
+import { users, grimoires, courses, type User, type InsertUser, type Grimoire, type InsertGrimoire, type Course, type InsertCourse } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -6,7 +6,6 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  createContact(contact: InsertContact): Promise<Contact>;
   getGrimoires(): Promise<Grimoire[]>;
   getCourses(): Promise<Course[]>;
   createGrimoire(grimoire: InsertGrimoire): Promise<Grimoire>;
@@ -32,13 +31,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createContact(insertContact: InsertContact): Promise<Contact> {
-    const [contact] = await db
-      .insert(contacts)
-      .values(insertContact)
-      .returning();
-    return contact;
-  }
+
 
   async getGrimoires(): Promise<Grimoire[]> {
     return await db.select().from(grimoires);

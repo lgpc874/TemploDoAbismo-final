@@ -4,7 +4,7 @@ import GrimoiresSection from "@/components/grimoires-section";
 import CoursesSection from "@/components/courses-section";
 import VipSection from "@/components/vip-section";
 import SecretSection from "@/components/secret-section";
-import ContactSection from "@/components/contact-section";
+import AuthSection from "@/components/auth-section";
 import Footer from "@/components/footer";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 import { useEffect } from "react";
@@ -102,7 +102,7 @@ export default function Home() {
       <CoursesSection />
       <VipSection />
       <SecretSection />
-      <ContactSection />
+      <AuthSection />
       <Footer />
     </div>
   );

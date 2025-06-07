@@ -10,7 +10,7 @@ export default function Navigation() {
     { href: "#cursos", label: "Cursos" },
     { href: "#vip", label: "Área VIP" },
     { href: "#secreto", label: "Portal Secreto" },
-    { href: "#contato", label: "Contato" },
+    { href: "#auth", label: "Acesso" },
   ];
 
   const handleNavClick = (href: string) => {
