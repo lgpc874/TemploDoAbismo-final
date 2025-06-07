@@ -1,46 +1,39 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
+import { Link, useLocation } from "wouter";
 
 export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [location] = useLocation();
 
   const navItems = [
-    { href: "#inicio", label: "Início" },
-    { href: "#grimórios", label: "Grimórios" },
-    { href: "#cursos", label: "Cursos" },
-    { href: "#vip", label: "Área VIP" },
-    { href: "#secreto", label: "Portal Secreto" },
-    { href: "#auth", label: "Acesso" },
+    { href: "/", label: "Templum" },
+    { href: "/libri-umbrarum", label: "Libri Umbrarum" },
+    { href: "/cursus-mysticus", label: "Cursus Mysticus" },
+    { href: "/sanctum-vip", label: "Sanctum VIP" },
+    { href: "/arcana-secreta", label: "Arcana Secreta" },
+    { href: "/porta-templi", label: "Porta Templi" },
   ];
-
-  const handleNavClick = (href: string) => {
-    const target = document.querySelector(href);
-    if (target) {
-      target.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }
-    setMobileMenuOpen(false);
-  };
 
   return (
     <nav className="fixed top-0 w-full z-50 glass-effect border-b border-deep-red/30">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="font-cinzel text-2xl font-bold text-shadow-gold">
+          <Link href="/" className="font-cinzel text-2xl font-bold text-shadow-gold hover:text-blood-red transition-colors">
             Templo do Abismo
-          </div>
+          </Link>
           
           <div className="hidden md:flex space-x-8 font-cinzel-regular">
             {navItems.map((item) => (
-              <button
+              <Link
                 key={item.href}
-                onClick={() => handleNavClick(item.href)}
-                className="hover:text-blood-red transition-colors duration-300"
+                href={item.href}
+                className={`hover:text-blood-red transition-colors duration-300 ${
+                  location === item.href ? 'text-blood-red border-b border-blood-red' : ''
+                }`}
               >
                 {item.label}
-              </button>
+              </Link>
             ))}
           </div>
 
@@ -57,13 +50,16 @@ export default function Navigation() {
         {mobileMenuOpen && (
           <div className="md:hidden mt-4 pb-4 font-cinzel-regular">
             {navItems.map((item) => (
-              <button
+              <Link
                 key={item.href}
-                onClick={() => handleNavClick(item.href)}
-                className="block w-full text-left py-2 hover:text-blood-red transition-colors"
+                href={item.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block w-full text-left py-2 hover:text-blood-red transition-colors ${
+                  location === item.href ? 'text-blood-red' : ''
+                }`}
               >
                 {item.label}
-              </button>
+              </Link>
             ))}
           </div>
         )}
