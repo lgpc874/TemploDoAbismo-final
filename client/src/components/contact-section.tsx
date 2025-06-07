@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import type { InsertContact } from "@shared/schema";
 
 export default function ContactSection() {
   const [formData, setFormData] = useState({
@@ -9,6 +12,33 @@ export default function ContactSection() {
     message: ""
   });
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const contactMutation = useMutation({
+    mutationFn: async (contactData: InsertContact) => {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        body: JSON.stringify(contactData),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) throw new Error('Failed to send contact');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Invocação Enviada",
+        description: "Sua mensagem foi enviada para os mestres do abismo.",
+      });
+      setFormData({ name: "", email: "", subject: "", message: "" });
+    },
+    onError: () => {
+      toast({
+        title: "Erro na Invocação",
+        description: "Falha ao enviar mensagem. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const subjects = [
     "Dúvidas sobre Cursos",
@@ -27,12 +57,7 @@ export default function ContactSection() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Contact form submitted:", formData);
-    toast({
-      title: "Invocação Enviada",
-      description: "Sua mensagem foi enviada para os mestres do abismo.",
-    });
-    setFormData({ name: "", email: "", subject: "", message: "" });
+    contactMutation.mutate(formData);
   };
 
   return (
