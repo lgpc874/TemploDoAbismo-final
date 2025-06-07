@@ -1,5 +1,6 @@
 import { pgTable, text, serial, integer, boolean, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
+import { relations } from "drizzle-orm";
 import { z } from "zod";
 
 export const users = pgTable("users", {
@@ -54,6 +55,24 @@ export const insertCourseSchema = createInsertSchema(courses).omit({
 export const insertContactSchema = createInsertSchema(contacts).omit({
   id: true,
 });
+
+// Relations
+export const usersRelations = relations(users, ({ many }) => ({
+  contacts: many(contacts),
+}));
+
+export const grimoiresRelations = relations(grimoires, ({ one }) => ({
+}));
+
+export const coursesRelations = relations(courses, ({ one }) => ({
+}));
+
+export const contactsRelations = relations(contacts, ({ one }) => ({
+  user: one(users, {
+    fields: [contacts.email],
+    references: [users.email],
+  }),
+}));
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
