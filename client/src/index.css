@@ -67,6 +67,25 @@
     background-attachment: fixed;
     background-position: center;
     font-family: 'Crimson Text', serif;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 500px;
+    height: 500px;
+    background-image: url('https://i.postimg.cc/g20gqmdX/IMG-20250527-182235-1.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transform: translate(-50%, -50%);
+    opacity: 0.08;
+    z-index: -1;
+    animation: rotate 40s linear infinite;
+    pointer-events: none;
   }
 
   h1, h2, h3, h4, h5, h6 {

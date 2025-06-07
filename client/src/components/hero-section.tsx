@@ -2,14 +2,6 @@ export default function HeroSection() {
   return (
     <section id="inicio" className="min-h-screen flex items-center justify-center relative pt-20">
       <div className="text-center z-10">
-        {/* Rotating Seal */}
-        <div className="seal-container mb-8">
-          <img
-            src="https://i.postimg.cc/g20gqmdX/IMG-20250527-182235-1.png"
-            alt="Selo do Templo do Abismo"
-            className="w-48 h-48 mx-auto animate-rotate-slow mystical-glow"
-          />
-        </div>
         
         <h1 className="font-cinzel text-5xl md:text-7xl font-bold mb-6 text-shadow-gold animate-float">
           TEMPLO DO ABISMO

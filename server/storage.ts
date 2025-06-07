@@ -144,7 +144,14 @@ export class MemStorage implements IStorage {
 
   async createGrimoire(insertGrimoire: InsertGrimoire): Promise<Grimoire> {
     const id = this.currentGrimoireId++;
-    const grimoire: Grimoire = { ...insertGrimoire, id };
+    const grimoire: Grimoire = { 
+      id,
+      title: insertGrimoire.title,
+      description: insertGrimoire.description,
+      type: insertGrimoire.type,
+      content: insertGrimoire.content ?? null,
+      price: insertGrimoire.price ?? null
+    };
     this.grimoires.set(id, grimoire);
     return grimoire;
   }
