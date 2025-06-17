@@ -16,7 +16,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { supabaseServiceNew as supabaseService } from "./supabase-service-new";
 import PDFGenerator from "./pdf-generator";
-import { SimplePDFGenerator } from "./simple-pdf-generator";
+import { AdvancedPDFGenerator } from "./advanced-pdf-generator";
 
 const JWT_SECRET = process.env.JWT_SECRET || "templo_abismo_secret_key";
 
@@ -284,13 +284,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         console.log("PDF generated with Puppeteer");
       } catch (puppeteerError) {
-        console.log("Puppeteer failed, using simple PDF generator:", puppeteerError.message);
-        // Fallback para geração simples
-        pdfBuffer = SimplePDFGenerator.generateSimplePDF({
+        console.log("Puppeteer failed, using advanced PDF generator:", (puppeteerError as Error).message);
+        // Fallback para geração avançada
+        pdfBuffer = AdvancedPDFGenerator.generateGrimoirePDF({
           title: grimoire.title,
-          content: grimoire.content || 'Conteúdo não disponível'
+          content: grimoire.content || '<p>Conteúdo não disponível</p>',
+          customCss: grimoire.custom_css || '',
+          includeImages: false
         });
-        console.log("PDF generated with simple generator");
+        console.log("PDF generated with advanced generator");
       }
 
       console.log("PDF generated successfully, size:", pdfBuffer.length);
