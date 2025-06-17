@@ -30,9 +30,13 @@ export class SupabaseServiceNew {
   private adminClient;
 
   constructor() {
-    const supabaseUrl = process.env.SUPABASE_URL || 'https://nqexwgnscvpfhuonbafr.supabase.co';
-    const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xZXh3Z25zY3ZwZmh1b25iYWZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3MjYzNDAsImV4cCI6MjA2NTMwMjM0MH0.Kx0FaGAPjCTY31F40zhVTKwiaJXswYpeX9Z75v4ZrBY';
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xZXh3Z25zY3ZwZmh1b25iYWZyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0OTcyNjM0MCwiZXhwIjoyMDY1MzAyMzQwfQ.ERK-PGWpodJX4WC_84IYW4pwbwkfmcICFFS5oXBsGlk';
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_ANON_KEY;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    if (!supabaseUrl || !supabaseKey || !serviceRoleKey) {
+      throw new Error('Credenciais do Supabase não configuradas. Verifique SUPABASE_URL, SUPABASE_ANON_KEY e SUPABASE_SERVICE_ROLE_KEY.');
+    }
     
     this.supabase = createClient(supabaseUrl, supabaseKey);
     this.adminClient = createClient(supabaseUrl, serviceRoleKey);

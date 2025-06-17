@@ -146,6 +146,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rota alternativa para compatibilidade
+  app.get("/api/library/sections", async (req, res) => {
+    try {
+      const sections = await supabaseService.getLibrarySections();
+      res.json(sections);
+    } catch (error: any) {
+      console.error("Error fetching sections:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/admin/library-sections", authenticateToken, async (req, res) => {
     try {
       const sectionData: InsertLibrarySection = insertLibrarySectionSchema.parse(req.body);
