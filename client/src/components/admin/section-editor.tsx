@@ -21,6 +21,7 @@ interface SectionFormData {
   description: string;
   icon_name: string;
   sort_order: number;
+  color_scheme: string;
 }
 
 export default function SectionEditor({ section, isOpen, onClose }: SectionEditorProps) {
@@ -28,7 +29,8 @@ export default function SectionEditor({ section, isOpen, onClose }: SectionEdito
     name: '',
     description: '',
     icon_name: '📚',
-    sort_order: 1
+    sort_order: 1,
+    color_scheme: '#D97706'
   });
 
   const { toast } = useToast();
