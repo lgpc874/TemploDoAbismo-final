@@ -16,6 +16,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { supabaseServiceNew as supabaseService } from "./supabase-service-new";
 import PDFGenerator from "./pdf-generator";
+import { SimplePDFGenerator } from "./simple-pdf-generator";
 
 const JWT_SECRET = process.env.JWT_SECRET || "templo_abismo_secret_key";
 
@@ -251,30 +252,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Rota para gerar PDF de grimório
-  app.post("/api/admin/grimoires/:id/pdf", authenticateToken, async (req, res) => {
+  app.post("/api/admin/grimoires/:id/pdf", async (req, res) => {
     try {
+      console.log("PDF generation requested for grimoire ID:", req.params.id);
+      
       const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "ID do grimório inválido" });
+      }
+
+      console.log("Fetching grimoire from database...");
       const grimoire = await supabaseService.getGrimoireById(id);
       
       if (!grimoire) {
+        console.log("Grimoire not found:", id);
         return res.status(404).json({ error: "Grimório não encontrado" });
       }
 
-      const pdfBuffer = await PDFGenerator.generateGrimoirePDF({
-        title: grimoire.title,
-        content: grimoire.content,
-        customCss: grimoire.custom_css || '',
-        includeImages: false
-      });
+      console.log("Grimoire found:", grimoire.title);
+      console.log("Starting PDF generation...");
 
+      let pdfBuffer: Buffer;
+      
+      try {
+        // Tentar usar Puppeteer primeiro
+        pdfBuffer = await PDFGenerator.generateGrimoirePDF({
+          title: grimoire.title,
+          content: grimoire.content || '<p>Conteúdo não disponível</p>',
+          customCss: grimoire.custom_css || '',
+          includeImages: false
+        });
+        console.log("PDF generated with Puppeteer");
+      } catch (puppeteerError) {
+        console.log("Puppeteer failed, using simple PDF generator:", puppeteerError.message);
+        // Fallback para geração simples
+        pdfBuffer = SimplePDFGenerator.generateSimplePDF({
+          title: grimoire.title,
+          content: grimoire.content || 'Conteúdo não disponível'
+        });
+        console.log("PDF generated with simple generator");
+      }
+
+      console.log("PDF generated successfully, size:", pdfBuffer.length);
+
+      const filename = grimoire.title.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+      
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="${grimoire.title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf"`);
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}.pdf"`);
       res.setHeader('Content-Length', pdfBuffer.length);
+      res.setHeader('Cache-Control', 'no-cache');
       
       res.send(pdfBuffer);
     } catch (error: any) {
       console.error("Error generating PDF:", error);
-      res.status(500).json({ error: "Erro ao gerar PDF: " + error.message });
+      console.error("Stack trace:", error.stack);
+      res.status(500).json({ 
+        error: "Erro ao gerar PDF", 
+        details: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
     }
   });
 
