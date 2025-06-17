@@ -140,8 +140,41 @@ export default function Biblioteca() {
     }
   };
 
-  const getSectionIcon = (sectionId: number) => {
-    switch (sectionId) {
+  const getSectionIcon = (section: any) => {
+    // Se há uma URL de ícone personalizada, retorna um componente de imagem
+    if (section.icon_url) {
+      return ({ size = 20, className = "" }) => (
+        <img 
+          src={section.icon_url} 
+          alt={section.name}
+          width={size} 
+          height={size}
+          className={`${className} object-contain`}
+          onError={(e) => {
+            // Fallback para emoji se a imagem falhar
+            const target = e.currentTarget;
+            target.style.display = 'none';
+            const next = target.nextElementSibling as HTMLElement;
+            if (next) next.style.display = 'inline';
+          }}
+        />
+      );
+    }
+    
+    // Se há um emoji personalizado, usa ele
+    if (section.icon_name && section.icon_name !== '📚') {
+      return ({ size = 20, className = "" }) => (
+        <span 
+          className={`${className} inline-block`}
+          style={{ fontSize: `${size}px`, lineHeight: 1 }}
+        >
+          {section.icon_name}
+        </span>
+      );
+    }
+    
+    // Fallback para ícones padrão baseados no ID
+    switch (section.id) {
       case 1: return InvertedCross; // Atrium Ignis - Cruz invertida
       case 2: return InvertedStar;  // Porta Umbrae - Estrela invertida
       case 3: return MysticalFlame; // Arcana Noctis - Chama mística
@@ -203,7 +236,7 @@ export default function Biblioteca() {
             <Tabs value={activeSection.toString()} onValueChange={(value) => setActiveSection(parseInt(value))}>
               <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-2 bg-transparent h-auto p-1">
                 {(sections as LibrarySection[]).map((section: LibrarySection) => {
-                  const IconComponent = getSectionIcon(section.id);
+                  const IconComponent = getSectionIcon(section);
                   const grimoireCount = (allGrimoires as Grimoire[]).filter((g: Grimoire) => g.section_id === section.id).length;
                   
                   return (
