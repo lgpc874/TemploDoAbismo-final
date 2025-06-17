@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { PageTransition } from '@/components/page-transition';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminOverview from '@/components/admin/admin-overview';
-import AdminBibliotecaComplete from '@/components/admin/admin-biblioteca-complete';
+import MobileAdminPanel from '@/components/admin/mobile-admin-panel';
 
 export default function AdminDashboard() {
   const { user, isAuthenticated } = useAuth();

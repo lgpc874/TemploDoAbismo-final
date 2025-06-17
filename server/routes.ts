@@ -15,6 +15,7 @@ import {
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { supabaseServiceNew as supabaseService } from "./supabase-service-new";
+import PDFGenerator from "./pdf-generator";
 
 const JWT_SECRET = process.env.JWT_SECRET || "templo_abismo_secret_key";
 
@@ -246,6 +247,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error deleting grimoire:", error);
       res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Rota para gerar PDF de grimório
+  app.post("/api/admin/grimoires/:id/pdf", authenticateToken, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const grimoire = await supabaseService.getGrimoireById(id);
+      
+      if (!grimoire) {
+        return res.status(404).json({ error: "Grimório não encontrado" });
+      }
+
+      const pdfBuffer = await PDFGenerator.generateGrimoirePDF({
+        title: grimoire.title,
+        content: grimoire.content,
+        customCss: grimoire.custom_css || '',
+        includeImages: false
+      });
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${grimoire.title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      
+      res.send(pdfBuffer);
+    } catch (error: any) {
+      console.error("Error generating PDF:", error);
+      res.status(500).json({ error: "Erro ao gerar PDF: " + error.message });
     }
   });
 
