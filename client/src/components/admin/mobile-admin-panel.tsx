@@ -26,6 +26,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import type { Grimoire, LibrarySection } from '@shared/schema';
 import GrimoireCompleteEditor from './grimoire-complete-editor';
+import SectionEditor from './section-editor';
 
 interface MobileAdminPanelProps {
   onClose?: () => void;
@@ -36,6 +37,8 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
   const [selectedSection, setSelectedSection] = useState<number | null>(null);
   const [editingGrimoire, setEditingGrimoire] = useState<Grimoire | null>(null);
   const [showGrimoireEditor, setShowGrimoireEditor] = useState(false);
+  const [editingSection, setEditingSection] = useState<LibrarySection | null>(null);
+  const [showSectionEditor, setShowSectionEditor] = useState(false);
   const [activeTab, setActiveTab] = useState('grimoires');
   
   const { toast } = useToast();
@@ -140,6 +143,22 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
     setShowGrimoireEditor(false);
     setEditingGrimoire(null);
     queryClient.invalidateQueries({ queryKey: ['/api/admin/grimoires'] });
+  };
+
+  const handleEditSection = (section: LibrarySection) => {
+    setEditingSection(section);
+    setShowSectionEditor(true);
+  };
+
+  const handleNewSection = () => {
+    setEditingSection(null);
+    setShowSectionEditor(true);
+  };
+
+  const handleCloseSectionEditor = () => {
+    setShowSectionEditor(false);
+    setEditingSection(null);
+    queryClient.invalidateQueries({ queryKey: ['/api/library-sections'] });
   };
 
   // Estatísticas rápidas
@@ -385,26 +404,65 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
 
           {/* TAB: SEÇÕES */}
           <TabsContent value="sections" className="space-y-4">
+            
+            {/* Botão Criar Nova Seção */}
+            <div className="flex justify-end">
+              <Button 
+                onClick={handleNewSection}
+                className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-black"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                <span className="sm:hidden">Nova Seção</span>
+                <span className="hidden sm:inline">Nova Seção</span>
+              </Button>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {sections.map((section) => {
                 const sectionGrimoires = grimoires.filter(g => g.section_id === section.id);
                 return (
-                  <Card key={section.id} className="bg-black/50 border-amber-500/30">
+                  <Card key={section.id} className="bg-black/50 border-amber-500/30 hover:border-amber-500/50 transition-all">
                     <CardHeader className="p-3 sm:p-4">
-                      <CardTitle className="text-amber-400 text-sm sm:text-base flex items-center gap-2">
-                        <Folder className="w-4 h-4" />
-                        {section.name}
-                      </CardTitle>
-                      <p className="text-amber-200/70 text-xs sm:text-sm">
-                        {sectionGrimoires.length} grimório(s)
-                      </p>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-amber-400 text-sm sm:text-base flex items-center gap-2">
+                            <span className="text-lg">{section.icon_name || '📚'}</span>
+                            <span className="truncate">{section.name}</span>
+                          </CardTitle>
+                          <p className="text-amber-200/70 text-xs sm:text-sm mt-1">
+                            {sectionGrimoires.length} grimório(s)
+                          </p>
+                        </div>
+                      </div>
                     </CardHeader>
+                    
                     <CardContent className="p-3 sm:p-4 pt-0">
                       {section.description && (
-                        <p className="text-amber-200/60 text-xs sm:text-sm line-clamp-3">
+                        <p className="text-amber-200/60 text-xs sm:text-sm line-clamp-2 mb-3">
                           {section.description}
                         </p>
                       )}
+                      
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Button
+                          onClick={() => handleEditSection(section)}
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 text-xs sm:text-sm"
+                        >
+                          <Edit3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          Editar
+                        </Button>
+                        
+                        <Button
+                          onClick={() => {/* TODO: implementar deleção */}}
+                          size="sm"
+                          variant="destructive"
+                          className="text-xs sm:text-sm"
+                        >
+                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 );
@@ -473,6 +531,13 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Editores Modal */}
+      <SectionEditor 
+        section={editingSection || undefined}
+        isOpen={showSectionEditor}
+        onClose={handleCloseSectionEditor}
+      />
     </div>
   );
 }

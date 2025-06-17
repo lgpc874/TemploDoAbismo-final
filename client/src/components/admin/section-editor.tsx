@@ -94,7 +94,7 @@ export default function SectionEditor({ section, isOpen, onClose }: SectionEdito
     },
   });
 
-  const handleInputChange = (field: keyof SectionFormData, value: string | number) => {
+  const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
