@@ -90,7 +90,11 @@ export default function GrimoireCompleteEditor({ grimoire, onClose, onSave }: Gr
     mutationFn: async (data: Partial<GrimoireFormData>) => {
       const endpoint = grimoire ? `/api/admin/grimoires/${grimoire.id}` : '/api/admin/grimoires';
       const method = grimoire ? 'PUT' : 'POST';
-      const response = await apiRequest(method, endpoint, data);
+      const response = await apiRequest(endpoint, {
+        method,
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -240,16 +244,20 @@ export default function GrimoireCompleteEditor({ grimoire, onClose, onSave }: Gr
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-black/90 border border-amber-500/30 rounded-lg w-full max-w-6xl max-h-[90vh] overflow-hidden">
-        <div className="p-6 border-b border-amber-500/30 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-amber-400 font-['Cinzel']">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-black/90 border border-amber-500/30 rounded-lg w-full max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
+        {/* Header - Mobile Optimized */}
+        <div className="p-3 sm:p-6 border-b border-amber-500/30 flex items-center justify-between">
+          <h2 className="text-lg sm:text-2xl font-bold text-amber-400 font-['Cinzel'] truncate">
             {grimoire ? '✏️ Editar Grimório' : '📜 Criar Grimório'}
           </h2>
-          <div className="flex gap-2">
-            <Button onClick={handleDownload} variant="outline" size="sm">
+          <div className="flex gap-1 sm:gap-2">
+            <Button onClick={handleDownload} variant="outline" size="sm" className="hidden sm:flex">
               <Download className="w-4 h-4 mr-2" />
               HTML
+            </Button>
+            <Button onClick={handleDownload} variant="outline" size="sm" className="sm:hidden">
+              <Download className="w-4 h-4" />
             </Button>
             <Button onClick={onClose} variant="outline" size="sm">
               ✕
@@ -257,58 +265,62 @@ export default function GrimoireCompleteEditor({ grimoire, onClose, onSave }: Gr
           </div>
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+        <div className="p-3 sm:p-6 overflow-y-auto max-h-[calc(95vh-120px)] sm:max-h-[calc(90vh-180px)]">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 bg-black/50 border border-amber-500/30">
-              <TabsTrigger value="content">
-                <FileText className="w-4 h-4 mr-2" />
-                Conteúdo
-              </TabsTrigger>
-              <TabsTrigger value="settings">
-                <Settings className="w-4 h-4 mr-2" />
-                Configurações
-              </TabsTrigger>
-              <TabsTrigger value="style">
-                <Palette className="w-4 h-4 mr-2" />
-                Estilo & CSS
-              </TabsTrigger>
-              <TabsTrigger value="ai">
-                <Sparkles className="w-4 h-4 mr-2" />
-                Geração IA
-              </TabsTrigger>
-              <TabsTrigger value="access">
-                <CreditCard className="w-4 h-4 mr-2" />
-                Acesso
-              </TabsTrigger>
-            </TabsList>
+            {/* Mobile Tabs - Scrollable */}
+            <div className="overflow-x-auto mb-4">
+              <TabsList className="flex sm:grid w-max sm:w-full sm:grid-cols-5 bg-black/50 border border-amber-500/30 min-w-full">
+                <TabsTrigger value="content" className="whitespace-nowrap px-2 sm:px-4">
+                  <FileText className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Conteúdo</span>
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="whitespace-nowrap px-2 sm:px-4">
+                  <Settings className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Configurações</span>
+                </TabsTrigger>
+                <TabsTrigger value="style" className="whitespace-nowrap px-2 sm:px-4">
+                  <Palette className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Estilo & CSS</span>
+                </TabsTrigger>
+                <TabsTrigger value="ai" className="whitespace-nowrap px-2 sm:px-4">
+                  <Sparkles className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Geração IA</span>
+                </TabsTrigger>
+                <TabsTrigger value="access" className="whitespace-nowrap px-2 sm:px-4">
+                  <CreditCard className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Acesso</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-            {/* ABA 1: CONTEÚDO */}
-            <TabsContent value="content" className="space-y-6">
+            {/* ABA 1: CONTEÚDO - Mobile Responsive */}
+            <TabsContent value="content" className="space-y-4 sm:space-y-6">
               <Card className="bg-black/50 border-amber-500/30">
-                <CardHeader>
-                  <CardTitle className="text-amber-400 flex items-center gap-2">
-                    <FileText className="w-5 h-5" />
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-amber-400 flex items-center gap-2 text-base sm:text-lg">
+                    <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
                     Conteúdo do Grimório
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-amber-200">Título</Label>
+                <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-6">
+                  {/* Mobile: Stack vertically, Desktop: Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-amber-200 text-sm">Título</Label>
                       <Input
                         value={formData.title}
                         onChange={(e) => handleInputChange('title', e.target.value)}
                         placeholder="Digite o título do grimório..."
-                        className="bg-black/50 border-amber-500/30 text-amber-100"
+                        className="bg-black/50 border-amber-500/30 text-amber-100 text-sm sm:text-base"
                       />
                     </div>
-                    <div>
-                      <Label className="text-amber-200">Estrutura</Label>
+                    <div className="space-y-2">
+                      <Label className="text-amber-200 text-sm">Estrutura</Label>
                       <Select 
                         value={formData.content_structure} 
                         onValueChange={(value) => handleInputChange('content_structure', value)}
                       >
-                        <SelectTrigger className="bg-black/50 border-amber-500/30 text-amber-100">
+                        <SelectTrigger className="bg-black/50 border-amber-500/30 text-amber-100 text-sm sm:text-base">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-black border-amber-500/30">
