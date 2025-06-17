@@ -159,7 +159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/library-sections", authenticateToken, async (req, res) => {
+  app.post("/api/admin/library-sections", async (req, res) => {
     try {
       const sectionData: InsertLibrarySection = insertLibrarySectionSchema.parse(req.body);
       const newSection = await supabaseService.createLibrarySection(sectionData);
@@ -170,7 +170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/library-sections/:id", authenticateToken, async (req, res) => {
+  app.put("/api/admin/library-sections/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const updates = insertLibrarySectionSchema.partial().parse(req.body);
