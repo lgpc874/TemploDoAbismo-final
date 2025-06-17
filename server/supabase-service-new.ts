@@ -407,6 +407,10 @@ IMPORTANTE: Retorne APENAS um objeto JSON válido com as seguintes propriedades:
 
 O conteúdo deve ser um grimório completo e substancial em HTML formatado.`;
 
+      if (!openai) {
+        throw new Error('OpenAI não configurado. Configure OPENAI_API_KEY para usar geração de IA.');
+      }
+
       const response = await openai.chat.completions.create({
         model: aiSettings?.model_name || 'gpt-4',
         messages: [
@@ -535,6 +539,10 @@ O conteúdo deve ser um grimório completo e substancial em HTML formatado.`;
   // ======================
   async createPaymentIntent(grimoireId: number, amount: number): Promise<{ clientSecret: string }> {
     try {
+      if (!stripe) {
+        throw new Error('Stripe não configurado. Configure STRIPE_SECRET_KEY para usar pagamentos.');
+      }
+      
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Converter para centavos
         currency: 'brl',
@@ -551,6 +559,10 @@ O conteúdo deve ser um grimório completo e substancial em HTML formatado.`;
 
   async processPaymentConfirmed(paymentIntentId: string, userId: number): Promise<void> {
     try {
+      if (!stripe) {
+        throw new Error('Stripe não configurado. Configure STRIPE_SECRET_KEY para usar pagamentos.');
+      }
+      
       const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
       
       if (paymentIntent.status === 'succeeded') {
