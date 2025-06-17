@@ -90,11 +90,16 @@ export default function GrimoireCompleteEditor({ grimoire, onClose, onSave }: Gr
     mutationFn: async (data: Partial<GrimoireFormData>) => {
       const endpoint = grimoire ? `/api/admin/grimoires/${grimoire.id}` : '/api/admin/grimoires';
       const method = grimoire ? 'PUT' : 'POST';
-      const response = await apiRequest(endpoint, {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(endpoint, {
         method,
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify(data)
       });
+      if (!response.ok) throw new Error('Erro ao salvar grimório');
       return response.json();
     },
     onSuccess: () => {
@@ -118,11 +123,20 @@ export default function GrimoireCompleteEditor({ grimoire, onClose, onSave }: Gr
   // Mutation para geração com IA
   const generateMutation = useMutation({
     mutationFn: async (prompt: string) => {
-      const response = await apiRequest('POST', '/api/admin/generate-grimoire', {
-        prompt,
-        section_id: formData.section_id,
-        title: formData.title
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch('/api/admin/generate-grimoire', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({
+          prompt,
+          section_id: formData.section_id,
+          title: formData.title
+        })
       });
+      if (!response.ok) throw new Error('Erro ao gerar conteúdo');
       return response.json();
     },
     onSuccess: (data) => {
@@ -331,26 +345,28 @@ export default function GrimoireCompleteEditor({ grimoire, onClose, onSave }: Gr
                     </div>
                   </div>
 
-                  <div>
-                    <Label className="text-amber-200">Descrição/Sinopse</Label>
+                  <div className="space-y-2">
+                    <Label className="text-amber-200 text-sm">Descrição/Sinopse</Label>
                     <Textarea
                       value={formData.excerpt}
                       onChange={(e) => handleInputChange('excerpt', e.target.value)}
                       placeholder="Breve descrição do grimório..."
-                      className="bg-black/50 border-amber-500/30 text-amber-100 h-20"
+                      className="bg-black/50 border-amber-500/30 text-amber-100 h-16 sm:h-20 text-sm sm:text-base resize-none"
                     />
                   </div>
 
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <Label className="text-amber-200">Conteúdo HTML</Label>
+                  <div className="space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                      <Label className="text-amber-200 text-sm">Conteúdo HTML</Label>
                       <Button
                         onClick={() => fileInputRef.current?.click()}
                         variant="outline"
                         size="sm"
+                        className="w-full sm:w-auto"
                       >
                         <FileUp className="w-4 h-4 mr-2" />
-                        Carregar HTML
+                        <span className="sm:hidden">Carregar</span>
+                        <span className="hidden sm:inline">Carregar HTML</span>
                       </Button>
                       <input
                         ref={fileInputRef}
@@ -364,31 +380,31 @@ export default function GrimoireCompleteEditor({ grimoire, onClose, onSave }: Gr
                       value={formData.content}
                       onChange={(e) => handleInputChange('content', e.target.value)}
                       placeholder="Digite o conteúdo HTML do grimório..."
-                      className="bg-black/50 border-amber-500/30 text-amber-100 h-80 font-mono text-sm"
+                      className="bg-black/50 border-amber-500/30 text-amber-100 h-48 sm:h-80 font-mono text-xs sm:text-sm resize-none"
                     />
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            {/* ABA 2: CONFIGURAÇÕES */}
-            <TabsContent value="settings" className="space-y-6">
+            {/* ABA 2: CONFIGURAÇÕES - Mobile Responsive */}
+            <TabsContent value="settings" className="space-y-4 sm:space-y-6">
               <Card className="bg-black/50 border-amber-500/30">
-                <CardHeader>
-                  <CardTitle className="text-amber-400 flex items-center gap-2">
-                    <Settings className="w-5 h-5" />
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-amber-400 flex items-center gap-2 text-base sm:text-lg">
+                    <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
                     Configurações Gerais
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-amber-200">Seção da Biblioteca</Label>
+                <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-amber-200 text-sm">Seção da Biblioteca</Label>
                       <Select 
                         value={formData.section_id.toString()} 
                         onValueChange={(value) => handleInputChange('section_id', parseInt(value))}
                       >
-                        <SelectTrigger className="bg-black/50 border-amber-500/30 text-amber-100">
+                        <SelectTrigger className="bg-black/50 border-amber-500/30 text-amber-100 text-sm sm:text-base">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-black border-amber-500/30">
@@ -400,29 +416,30 @@ export default function GrimoireCompleteEditor({ grimoire, onClose, onSave }: Gr
                         </SelectContent>
                       </Select>
                     </div>
-                    <div>
-                      <Label className="text-amber-200">Ordem de Exibição</Label>
+                    <div className="space-y-2">
+                      <Label className="text-amber-200 text-sm">Ordem de Exibição</Label>
                       <Input
                         type="number"
                         value={formData.display_order}
                         onChange={(e) => handleInputChange('display_order', parseInt(e.target.value) || 1)}
-                        className="bg-black/50 border-amber-500/30 text-amber-100"
+                        className="bg-black/50 border-amber-500/30 text-amber-100 text-sm sm:text-base"
                       />
                     </div>
                   </div>
 
-                  <div>
-                    <Label className="text-amber-200">URL da Capa</Label>
-                    <div className="flex gap-2">
+                  <div className="space-y-2">
+                    <Label className="text-amber-200 text-sm">URL da Capa</Label>
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Input
                         value={formData.cover_image_url}
                         onChange={(e) => handleInputChange('cover_image_url', e.target.value)}
                         placeholder="https://exemplo.com/capa.jpg"
-                        className="bg-black/50 border-amber-500/30 text-amber-100"
+                        className="bg-black/50 border-amber-500/30 text-amber-100 text-sm sm:text-base flex-1"
                       />
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" className="w-full sm:w-auto">
                         <Image className="w-4 h-4 mr-2" />
-                        Gerar IA
+                        <span className="sm:hidden">Gerar</span>
+                        <span className="hidden sm:inline">Gerar IA</span>
                       </Button>
                     </div>
                   </div>
