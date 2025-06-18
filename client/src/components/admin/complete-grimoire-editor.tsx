@@ -113,7 +113,7 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
         body: JSON.stringify({
           title,
           content,
-          description: excerpt || title, // Usar excerpt como description, ou título se vazio
+          description: excerpt?.trim() || title?.trim() || 'Grimório sem descrição', // Garantir que description nunca seja vazio
           section_id: sectionId,
           is_published: false,
           custom_css: customCss + '\n' + generateBackgroundCss(),
@@ -149,6 +149,15 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
       toast({
         title: "Erro",
         description: "Título é obrigatório",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!content.trim()) {
+      toast({
+        title: "Erro",
+        description: "Conteúdo é obrigatório",
         variant: "destructive",
       });
       return;
