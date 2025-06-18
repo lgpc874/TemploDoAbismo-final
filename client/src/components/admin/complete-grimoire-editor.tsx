@@ -21,13 +21,19 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
   const [excerpt, setExcerpt] = useState(grimoire?.excerpt || '');
   const [sectionId, setSectionId] = useState(grimoire?.section_id || 1);
   const [customCss, setCustomCss] = useState(grimoire?.custom_css || '');
-  const [activeTab, setActiveTab] = useState<'content' | 'css' | 'background' | 'preview'>('content');
+  const [isPublished, setIsPublished] = useState(grimoire?.is_published || false);
+  const [coverImageUrl, setCoverImageUrl] = useState(grimoire?.cover_image_url || '');
+  const [activeTab, setActiveTab] = useState<'content' | 'css' | 'background' | 'cover' | 'ai' | 'preview'>('content');
   
   // Estados para configuração de fundo
   const [backgroundType, setBackgroundType] = useState<'color' | 'image' | 'css'>('color');
   const [backgroundColor, setBackgroundColor] = useState(grimoire?.background_color || '#1a0a0a');
   const [backgroundImageUrl, setBackgroundImageUrl] = useState('');
   const [backgroundCss, setBackgroundCss] = useState('');
+  
+  // Estados para IA
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiGenerating, setAiGenerating] = useState(false);
 
   // Buscar seções
   const { data: sections = [] } = useQuery<LibrarySection[]>({
@@ -35,19 +41,28 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
   });
 
   // Função para ler arquivos
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, type: 'html' | 'txt' | 'css' | 'image') => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, type: 'html' | 'txt' | 'css' | 'image' | 'cover') => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     if (type === 'image') {
-      // Para imagens, criar URL do arquivo
+      // Para imagens de fundo
       const imageUrl = URL.createObjectURL(file);
       setBackgroundImageUrl(imageUrl);
       setBackgroundType('image');
       setActiveTab('background');
       toast({
-        title: "Imagem carregada!",
+        title: "Imagem de fundo carregada!",
         description: `Arquivo ${file.name} foi carregado como fundo.`,
+      });
+    } else if (type === 'cover') {
+      // Para capa do grimório
+      const imageUrl = URL.createObjectURL(file);
+      setCoverImageUrl(imageUrl);
+      setActiveTab('cover');
+      toast({
+        title: "Capa carregada!",
+        description: `Arquivo ${file.name} foi carregado como capa.`,
       });
     } else {
       const reader = new FileReader();
@@ -75,6 +90,60 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
     
     // Limpar o input
     event.target.value = '';
+  };
+
+  // Função para gerar grimório com IA
+  const generateWithAI = async () => {
+    if (!aiPrompt.trim()) {
+      toast({
+        title: "Erro",
+        description: "Digite um prompt para a IA",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAiGenerating(true);
+    
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch('/api/admin/generate-grimoire', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({
+          prompt: aiPrompt,
+          section_id: sectionId,
+          title: title || 'Grimório Gerado por IA'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao gerar grimório com IA');
+      }
+
+      const data = await response.json();
+      
+      setContent(data.content);
+      if (!title) setTitle(data.title || 'Grimório Gerado por IA');
+      setActiveTab('content');
+      
+      toast({
+        title: "Grimório gerado!",
+        description: "Conteúdo criado pela IA com sucesso.",
+      });
+      
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao gerar grimório com IA",
+        variant: "destructive",
+      });
+    } finally {
+      setAiGenerating(false);
+    }
   };
 
   // Gerar CSS de fundo baseado nas configurações
@@ -113,9 +182,10 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
         body: JSON.stringify({
           title,
           content,
-          description: excerpt?.trim() || title?.trim() || 'Grimório sem descrição', // Garantir que description nunca seja vazio
+          description: excerpt?.trim() || title?.trim() || 'Grimório sem descrição',
           section_id: sectionId,
-          is_published: false,
+          is_published: isPublished,
+          cover_image_url: coverImageUrl,
           custom_css: customCss + '\n' + generateBackgroundCss(),
           background_color: backgroundColor
         })
@@ -346,11 +416,50 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
                 />
                 <div className="flex items-center gap-2 p-3 border border-amber-500/30 rounded-lg cursor-pointer hover:bg-amber-500/10 transition-colors">
                   <Upload className="w-5 h-5 text-amber-400" />
-                  <span className="text-amber-200 text-sm">Imagem</span>
+                  <span className="text-amber-200 text-sm">Fundo</span>
                 </div>
               </label>
             </div>
 
+            {/* Upload Capa */}
+            <div>
+              <label className="block">
+                <input
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.gif,.webp"
+                  onChange={(e) => handleFileUpload(e, 'cover')}
+                  className="hidden"
+                />
+                <div className="flex items-center gap-2 p-3 border border-amber-500/30 rounded-lg cursor-pointer hover:bg-amber-500/10 transition-colors">
+                  <Upload className="w-5 h-5 text-amber-400" />
+                  <span className="text-amber-200 text-sm">Capa</span>
+                </div>
+              </label>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Opção de publicação */}
+        <div className="bg-black/60 backdrop-blur-sm border border-amber-500/30 rounded-lg p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-amber-400">Status de Publicação</h3>
+              <p className="text-sm text-amber-200/70 mt-1">
+                {isPublished ? 'Este grimório será publicado e visível para usuários' : 'Este grimório será salvo como rascunho'}
+              </p>
+            </div>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <span className="text-amber-200 text-sm">
+                {isPublished ? 'Publicado' : 'Rascunho'}
+              </span>
+              <input
+                type="checkbox"
+                checked={isPublished}
+                onChange={(e) => setIsPublished(e.target.checked)}
+                className="w-5 h-5 rounded border-amber-500/30 bg-black/50 text-amber-500 focus:ring-amber-500/20"
+              />
+            </label>
           </div>
         </div>
 
@@ -390,7 +499,29 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
               }`}
             >
               <Upload className="w-4 h-4" />
-              Configurar Fundo
+              Fundo
+            </button>
+            <button
+              onClick={() => setActiveTab('cover')}
+              className={`px-6 py-3 flex items-center gap-2 transition-colors ${
+                activeTab === 'cover' 
+                  ? 'bg-amber-500/20 text-amber-300 border-b-2 border-amber-500' 
+                  : 'text-amber-200 hover:bg-amber-500/10'
+              }`}
+            >
+              <Upload className="w-4 h-4" />
+              Capa
+            </button>
+            <button
+              onClick={() => setActiveTab('ai')}
+              className={`px-6 py-3 flex items-center gap-2 transition-colors ${
+                activeTab === 'ai' 
+                  ? 'bg-amber-500/20 text-amber-300 border-b-2 border-amber-500' 
+                  : 'text-amber-200 hover:bg-amber-500/10'
+              }`}
+            >
+              <Code className="w-4 h-4" />
+              IA
             </button>
             <button
               onClick={() => setActiveTab('preview')}
@@ -581,6 +712,104 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
                       • <code>background: radial-gradient(circle, #4A0E4E, #000000);</code><br/>
                       • <code>background: url('imagem.jpg') center/cover, #1a0a0a;</code>
                     </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'cover' && (
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-amber-200">
+                    URL da Capa
+                  </label>
+                  <Input
+                    value={coverImageUrl}
+                    onChange={(e) => setCoverImageUrl(e.target.value)}
+                    placeholder="https://exemplo.com/capa.jpg"
+                    className="bg-black/50 border-amber-500/30 text-amber-100"
+                  />
+                  <p className="text-xs text-amber-300/70 mt-1">
+                    Cole a URL de uma imagem ou faça upload usando o botão "Capa" acima
+                  </p>
+                </div>
+
+                {coverImageUrl && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-amber-200">
+                      Preview da Capa
+                    </label>
+                    <div className="border border-amber-500/30 rounded-lg overflow-hidden">
+                      <img 
+                        src={coverImageUrl}
+                        alt="Preview da capa"
+                        className="w-full h-64 object-cover"
+                        onError={() => {
+                          toast({
+                            title: "Erro",
+                            description: "Não foi possível carregar a imagem da capa",
+                            variant: "destructive",
+                          });
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+                  <h4 className="text-amber-300 font-medium mb-2">Dicas para Capa:</h4>
+                  <ul className="text-sm text-amber-200/80 space-y-1">
+                    <li>• Resolução recomendada: 300x400px ou proporção 3:4</li>
+                    <li>• Formatos aceitos: JPG, PNG, WebP</li>
+                    <li>• Use imagens relacionadas ao tema do grimório</li>
+                    <li>• Evite texto na imagem (use o título do grimório)</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'ai' && (
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-amber-200">
+                    Prompt para IA
+                  </label>
+                  <Textarea
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="Descreva o tipo de grimório que deseja criar. Ex: 'Crie um grimório sobre magia lunar com rituais de proteção e meditação'"
+                    className="w-full h-32 resize-none bg-black/50 border-amber-500/30 text-amber-100 placeholder:text-amber-300/50"
+                  />
+                  <p className="text-xs text-amber-300/70 mt-1">
+                    Seja específico sobre o tema, estilo e conteúdo desejado
+                  </p>
+                </div>
+
+                <Button 
+                  onClick={generateWithAI}
+                  disabled={aiGenerating || !aiPrompt.trim()}
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-black font-semibold"
+                >
+                  {aiGenerating ? 'Gerando...' : 'Gerar Grimório com IA'}
+                </Button>
+
+                <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
+                  <h4 className="text-purple-300 font-medium mb-2">Como usar a IA:</h4>
+                  <ul className="text-sm text-purple-200/80 space-y-1">
+                    <li>• Seja específico sobre o tema desejado</li>
+                    <li>• Inclua detalhes sobre rituais, práticas ou ensinamentos</li>
+                    <li>• Mencione o nível de experiência (iniciante, intermediário, avançado)</li>
+                    <li>• A IA gerará conteúdo HTML formatado automaticamente</li>
+                    <li>• Você pode editar o conteúdo gerado depois</li>
+                  </ul>
+                </div>
+
+                {aiGenerating && (
+                  <div className="text-center">
+                    <div className="inline-flex items-center gap-2 text-amber-300">
+                      <div className="w-4 h-4 border-2 border-amber-300 border-t-transparent rounded-full animate-spin"></div>
+                      <span>Gerando conteúdo com IA...</span>
+                    </div>
                   </div>
                 )}
               </div>
