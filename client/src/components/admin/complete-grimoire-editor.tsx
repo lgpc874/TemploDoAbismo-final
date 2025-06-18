@@ -20,8 +20,14 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
   const [content, setContent] = useState(grimoire?.content || '');
   const [excerpt, setExcerpt] = useState(grimoire?.excerpt || '');
   const [sectionId, setSectionId] = useState(grimoire?.section_id || 1);
-  const [customCss, setCustomCss] = useState('');
-  const [activeTab, setActiveTab] = useState<'content' | 'css' | 'preview'>('content');
+  const [customCss, setCustomCss] = useState(grimoire?.custom_css || '');
+  const [activeTab, setActiveTab] = useState<'content' | 'css' | 'background' | 'preview'>('content');
+  
+  // Estados para configuração de fundo
+  const [backgroundType, setBackgroundType] = useState<'color' | 'image' | 'css'>('color');
+  const [backgroundColor, setBackgroundColor] = useState(grimoire?.background_color || '#1a0a0a');
+  const [backgroundImageUrl, setBackgroundImageUrl] = useState('');
+  const [backgroundCss, setBackgroundCss] = useState('');
 
   // Buscar seções
   const { data: sections = [] } = useQuery<LibrarySection[]>({
@@ -29,34 +35,66 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
   });
 
   // Função para ler arquivos
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, type: 'html' | 'txt' | 'css') => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, type: 'html' | 'txt' | 'css' | 'image') => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-      
-      if (type === 'css') {
-        setCustomCss(text);
-        setActiveTab('css');
-        toast({
-          title: "CSS carregado!",
-          description: `Arquivo ${file.name} foi carregado com sucesso.`,
-        });
-      } else {
-        setContent(text);
-        setActiveTab('content');
-        toast({
-          title: `${type.toUpperCase()} carregado!`,
-          description: `Arquivo ${file.name} foi carregado com sucesso.`,
-        });
-      }
-    };
-    reader.readAsText(file);
+    if (type === 'image') {
+      // Para imagens, criar URL do arquivo
+      const imageUrl = URL.createObjectURL(file);
+      setBackgroundImageUrl(imageUrl);
+      setBackgroundType('image');
+      setActiveTab('background');
+      toast({
+        title: "Imagem carregada!",
+        description: `Arquivo ${file.name} foi carregado como fundo.`,
+      });
+    } else {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        
+        if (type === 'css') {
+          setCustomCss(text);
+          setActiveTab('css');
+          toast({
+            title: "CSS carregado!",
+            description: `Arquivo ${file.name} foi carregado com sucesso.`,
+          });
+        } else {
+          setContent(text);
+          setActiveTab('content');
+          toast({
+            title: `${type.toUpperCase()} carregado!`,
+            description: `Arquivo ${file.name} foi carregado com sucesso.`,
+          });
+        }
+      };
+      reader.readAsText(file);
+    }
     
     // Limpar o input
     event.target.value = '';
+  };
+
+  // Gerar CSS de fundo baseado nas configurações
+  const generateBackgroundCss = () => {
+    switch (backgroundType) {
+      case 'color':
+        return `body, .grimoire-content { background: ${backgroundColor} !important; }`;
+      case 'image':
+        if (backgroundImageUrl) {
+          return `body, .grimoire-content { 
+            background: url('${backgroundImageUrl}') center/cover no-repeat fixed !important;
+            background-color: ${backgroundColor} !important;
+          }`;
+        }
+        return '';
+      case 'css':
+        return backgroundCss;
+      default:
+        return '';
+    }
   };
 
   // Mutation para salvar
@@ -78,7 +116,8 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
           excerpt,
           section_id: sectionId,
           is_published: false,
-          custom_css: customCss
+          custom_css: customCss + '\n' + generateBackgroundCss(),
+          background_color: backgroundColor
         })
       });
       
@@ -119,18 +158,23 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
   };
 
   const renderPreview = () => {
+    const combinedCss = customCss + '\n' + generateBackgroundCss();
     const previewContent = `
       <style>
-        ${customCss}
+        ${combinedCss}
         body { 
           font-family: 'EB Garamond', serif; 
-          background: black; 
           color: #f5f5dc; 
           padding: 20px;
           line-height: 1.6;
+          margin: 0;
+        }
+        .grimoire-content {
+          min-height: 100vh;
+          padding: 20px;
         }
       </style>
-      <div>
+      <div class="grimoire-content">
         <h1 style="color: #d4af37; font-family: 'Cinzel', serif;">${title}</h1>
         ${content}
       </div>
@@ -140,7 +184,7 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
       <div className="w-full h-96 border border-amber-500/30 rounded-lg overflow-hidden">
         <iframe
           srcDoc={previewContent}
-          className="w-full h-full bg-black"
+          className="w-full h-full"
           title="Preview do Grimório"
         />
       </div>
@@ -221,7 +265,7 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
         {/* Upload de arquivos */}
         <div className="bg-black/60 backdrop-blur-sm border border-amber-500/30 rounded-lg p-6 mb-6">
           <h3 className="text-lg font-semibold text-amber-400 mb-4">Upload de Arquivos</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             
             {/* Upload HTML */}
             <div>
@@ -234,7 +278,7 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
                 />
                 <div className="flex items-center gap-2 p-3 border border-amber-500/30 rounded-lg cursor-pointer hover:bg-amber-500/10 transition-colors">
                   <FileText className="w-5 h-5 text-amber-400" />
-                  <span className="text-amber-200 text-sm">Upload HTML</span>
+                  <span className="text-amber-200 text-sm">HTML</span>
                 </div>
               </label>
             </div>
@@ -250,7 +294,7 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
                 />
                 <div className="flex items-center gap-2 p-3 border border-amber-500/30 rounded-lg cursor-pointer hover:bg-amber-500/10 transition-colors">
                   <Upload className="w-5 h-5 text-amber-400" />
-                  <span className="text-amber-200 text-sm">Upload TXT</span>
+                  <span className="text-amber-200 text-sm">TXT</span>
                 </div>
               </label>
             </div>
@@ -266,7 +310,23 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
                 />
                 <div className="flex items-center gap-2 p-3 border border-amber-500/30 rounded-lg cursor-pointer hover:bg-amber-500/10 transition-colors">
                   <Palette className="w-5 h-5 text-amber-400" />
-                  <span className="text-amber-200 text-sm">Upload CSS</span>
+                  <span className="text-amber-200 text-sm">CSS</span>
+                </div>
+              </label>
+            </div>
+
+            {/* Upload Imagem de Fundo */}
+            <div>
+              <label className="block">
+                <input
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.gif,.webp"
+                  onChange={(e) => handleFileUpload(e, 'image')}
+                  className="hidden"
+                />
+                <div className="flex items-center gap-2 p-3 border border-amber-500/30 rounded-lg cursor-pointer hover:bg-amber-500/10 transition-colors">
+                  <Upload className="w-5 h-5 text-amber-400" />
+                  <span className="text-amber-200 text-sm">Imagem</span>
                 </div>
               </label>
             </div>
@@ -300,6 +360,17 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
             >
               <Palette className="w-4 h-4" />
               CSS Personalizado
+            </button>
+            <button
+              onClick={() => setActiveTab('background')}
+              className={`px-6 py-3 flex items-center gap-2 transition-colors ${
+                activeTab === 'background' 
+                  ? 'bg-amber-500/20 text-amber-300 border-b-2 border-amber-500' 
+                  : 'text-amber-200 hover:bg-amber-500/10'
+              }`}
+            >
+              <Upload className="w-4 h-4" />
+              Configurar Fundo
             </button>
             <button
               onClick={() => setActiveTab('preview')}
@@ -348,6 +419,150 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
                 <p className="text-xs text-amber-300/70 mt-2">
                   CSS será aplicado ao grimório. Exemplo: h1 {'{color: #d4af37; font-size: 2rem;}'}
                 </p>
+              </div>
+            )}
+
+            {activeTab === 'background' && (
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium mb-3 text-amber-200">
+                    Tipo de Fundo
+                  </label>
+                  <div className="grid grid-cols-3 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setBackgroundType('color')}
+                      className={`p-3 border rounded-lg transition-colors ${
+                        backgroundType === 'color'
+                          ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                          : 'border-amber-500/30 text-amber-200 hover:bg-amber-500/10'
+                      }`}
+                    >
+                      Cor Sólida
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBackgroundType('image')}
+                      className={`p-3 border rounded-lg transition-colors ${
+                        backgroundType === 'image'
+                          ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                          : 'border-amber-500/30 text-amber-200 hover:bg-amber-500/10'
+                      }`}
+                    >
+                      Imagem
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBackgroundType('css')}
+                      className={`p-3 border rounded-lg transition-colors ${
+                        backgroundType === 'css'
+                          ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                          : 'border-amber-500/30 text-amber-200 hover:bg-amber-500/10'
+                      }`}
+                    >
+                      CSS Avançado
+                    </button>
+                  </div>
+                </div>
+
+                {backgroundType === 'color' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-amber-200">
+                      Cor de Fundo
+                    </label>
+                    <div className="flex gap-3 items-center">
+                      <input
+                        type="color"
+                        value={backgroundColor}
+                        onChange={(e) => setBackgroundColor(e.target.value)}
+                        className="w-12 h-12 border border-amber-500/30 rounded cursor-pointer"
+                      />
+                      <Input
+                        value={backgroundColor}
+                        onChange={(e) => setBackgroundColor(e.target.value)}
+                        placeholder="#1a0a0a"
+                        className="flex-1 bg-black/50 border-amber-500/30 text-amber-100"
+                      />
+                    </div>
+                    <p className="text-xs text-amber-300/70 mt-1">
+                      Use códigos hex (#000000) ou nomes de cores CSS
+                    </p>
+                  </div>
+                )}
+
+                {backgroundType === 'image' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-amber-200">
+                        URL da Imagem
+                      </label>
+                      <Input
+                        value={backgroundImageUrl}
+                        onChange={(e) => setBackgroundImageUrl(e.target.value)}
+                        placeholder="https://exemplo.com/imagem.jpg"
+                        className="bg-black/50 border-amber-500/30 text-amber-100"
+                      />
+                      <p className="text-xs text-amber-300/70 mt-1">
+                        Cole a URL de uma imagem ou faça upload usando o botão "Imagem" acima
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-amber-200">
+                        Cor de Fundo (fallback)
+                      </label>
+                      <div className="flex gap-3 items-center">
+                        <input
+                          type="color"
+                          value={backgroundColor}
+                          onChange={(e) => setBackgroundColor(e.target.value)}
+                          className="w-12 h-12 border border-amber-500/30 rounded cursor-pointer"
+                        />
+                        <Input
+                          value={backgroundColor}
+                          onChange={(e) => setBackgroundColor(e.target.value)}
+                          placeholder="#1a0a0a"
+                          className="flex-1 bg-black/50 border-amber-500/30 text-amber-100"
+                        />
+                      </div>
+                      <p className="text-xs text-amber-300/70 mt-1">
+                        Cor exibida enquanto a imagem carrega
+                      </p>
+                    </div>
+
+                    {backgroundImageUrl && (
+                      <div>
+                        <label className="block text-sm font-medium mb-2 text-amber-200">
+                          Preview da Imagem
+                        </label>
+                        <div 
+                          className="w-full h-32 border border-amber-500/30 rounded-lg bg-cover bg-center"
+                          style={{ backgroundImage: `url(${backgroundImageUrl})` }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {backgroundType === 'css' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-amber-200">
+                      CSS de Fundo Personalizado
+                    </label>
+                    <Textarea
+                      value={backgroundCss}
+                      onChange={(e) => setBackgroundCss(e.target.value)}
+                      placeholder="background: linear-gradient(135deg, #1a0a0a 0%, #2d0b00 100%);"
+                      className="w-full h-32 font-mono text-sm resize-none bg-black/50 border-amber-500/30 text-amber-100 placeholder:text-amber-300/50"
+                    />
+                    <p className="text-xs text-amber-300/70 mt-2">
+                      Escreva CSS personalizado para o fundo. Exemplos:<br/>
+                      • <code>background: linear-gradient(45deg, #8B0000, #000000);</code><br/>
+                      • <code>background: radial-gradient(circle, #4A0E4E, #000000);</code><br/>
+                      • <code>background: url('imagem.jpg') center/cover, #1a0a0a;</code>
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
