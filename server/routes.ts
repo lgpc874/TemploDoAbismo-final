@@ -220,7 +220,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/grimoires", async (req, res) => {
     try {
-      const grimoireData = insertGrimoireSchema.parse(req.body);
+      const rawData = req.body;
+      
+      // Garantir que description sempre tenha um valor
+      if (!rawData.description || rawData.description.trim() === '') {
+        rawData.description = rawData.title || 'Grimório sem descrição';
+      }
+      
+      // Limpar campos string
+      if (rawData.title) rawData.title = rawData.title.trim();
+      if (rawData.content) rawData.content = rawData.content.trim();
+      if (rawData.description) rawData.description = rawData.description.trim();
+      
+      console.log('Dados limpos para criação:', {
+        title: rawData.title,
+        hasContent: !!rawData.content,
+        description: rawData.description,
+        section_id: rawData.section_id
+      });
+      
+      const grimoireData = insertGrimoireSchema.parse(rawData);
       const newGrimoire = await supabaseService.createGrimoire(grimoireData);
       res.status(201).json(newGrimoire);
     } catch (error: any) {

@@ -145,7 +145,11 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
   });
 
   const handleSave = () => {
-    if (!title.trim()) {
+    const cleanTitle = title.trim();
+    const cleanContent = content.trim();
+    const cleanExcerpt = excerpt.trim();
+    
+    if (!cleanTitle) {
       toast({
         title: "Erro",
         description: "Título é obrigatório",
@@ -154,7 +158,7 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
       return;
     }
 
-    if (!content.trim()) {
+    if (!cleanContent) {
       toast({
         title: "Erro",
         description: "Conteúdo é obrigatório",
@@ -162,6 +166,13 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
       });
       return;
     }
+
+    console.log('Salvando com dados:', {
+      title: cleanTitle,
+      content: cleanContent,
+      description: cleanExcerpt || cleanTitle,
+      section_id: sectionId
+    });
     
     saveMutation.mutate();
   };
