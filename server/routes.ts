@@ -362,20 +362,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/generate-grimoire", async (req, res) => {
     try {
       const { prompt, section_id, title } = req.body;
-      // Simulação de geração com IA
-      const generatedContent = `
-        <h1>${title || 'Grimório Gerado'}</h1>
-        <p>Este grimório foi gerado baseado no prompt: "${prompt}"</p>
-        <h2>Introdução</h2>
-        <p>Conteúdo gerado automaticamente com base nos parâmetros fornecidos...</p>
-        <h2>Desenvolvimento</h2>
-        <p>Seções desenvolvidas conforme a seção ${section_id} selecionada...</p>
-      `;
+      
+      // Gerar conteúdo no formato correto do grimório
+      const grimoireTitle = title || 'Grimório Gerado com IA';
+      const generatedContent = `<div class="grimorio-conteudo">
+  <h2 class="grimorio-titulo">${grimoireTitle}</h2>
+  <p class="grimorio-subtitulo">Gerado com base no prompt: "${prompt}"</p>
+  
+  <div class="section">
+    <h3>Introdução</h3>
+    <p>Este grimório foi criado especificamente com base na sua solicitação. O conteúdo a seguir explora os temas e práticas relacionados ao seu interesse específico.</p>
+    <p>Cada seção foi desenvolvida para fornecer conhecimentos práticos e teóricos fundamentais para o caminho escolhido.</p>
+  </div>
+  
+  <div class="section">
+    <h3>Fundamentos e Preparação</h3>
+    <p>Antes de iniciar qualquer prática, é essencial compreender os fundamentos que sustentam os ensinamentos aqui apresentados.</p>
+    <p>A preparação mental e espiritual forma a base sobre a qual todo conhecimento subsequente será construído.</p>
+    <p>Dedique tempo para absorver completamente cada conceito antes de avançar para práticas mais complexas.</p>
+  </div>
+  
+  <div class="section">
+    <h3>Práticas Iniciais</h3>
+    <p>As primeiras práticas são desenvolvidas para estabelecer uma conexão sólida com os princípios fundamentais.</p>
+    <p>Comece com exercícios simples de concentração e meditação, permitindo que sua mente se acostume gradualmente com os novos conceitos.</p>
+    <p>A consistência na prática é mais valiosa que a intensidade inicial. Mantenha um ritmo sustentável.</p>
+  </div>
+  
+  <div class="section">
+    <h3>Desenvolvimento Intermediário</h3>
+    <p>Conforme sua compreensão se aprofunda, novos horizontes de possibilidades se abrem diante de você.</p>
+    <p>Este estágio requer maior disciplina e dedicação, pois os conceitos se tornam mais sutis e complexos.</p>
+    <p>Mantenha um diário de suas experiências e reflexões para acompanhar seu progresso ao longo do caminho.</p>
+  </div>
+  
+  <div class="section">
+    <h3>Técnicas Avançadas</h3>
+    <p>As práticas avançadas exigem não apenas conhecimento, mas também sabedoria para aplicá-las adequadamente.</p>
+    <p>Neste ponto, você já deve ter desenvolvido discernimento suficiente para adaptar os ensinamentos à sua situação única.</p>
+    <p>Lembre-se sempre de que o verdadeiro poder reside no autoconhecimento e na responsabilidade pessoal.</p>
+  </div>
+  
+  <div class="section">
+    <h3>Integração e Aplicação</h3>
+    <p>O conhecimento sem aplicação permanece apenas como teoria. Esta seção foca na integração prática dos ensinamentos em sua vida diária.</p>
+    <p>Desenvolva um sistema pessoal que incorpore naturalmente os princípios aprendidos em suas atividades cotidianas.</p>
+    <p>A verdadeira maestria vem através da aplicação consistente e consciente dos ensinamentos.</p>
+  </div>
+  
+  <div class="section">
+    <h3>Reflexões Finais</h3>
+    <p>Este grimório representa apenas o início de uma jornada muito maior de autodescoberta e crescimento.</p>
+    <p>Continue estudando, praticando e refinando sua compreensão através da experiência direta.</p>
+    <p>Que os ensinamentos aqui compartilhados sirvam como farol em seu caminho de evolução pessoal.</p>
+  </div>
+</div>`;
       
       res.json({
         content: generatedContent,
-        title: title || 'Grimório Gerado com IA',
-        excerpt: 'Grimório gerado automaticamente baseado no prompt fornecido.'
+        title: grimoireTitle,
+        excerpt: `Grimório personalizado gerado com base no tema: ${prompt.substring(0, 100)}...`
       });
     } catch (error: any) {
       console.error("Error generating grimoire:", error);

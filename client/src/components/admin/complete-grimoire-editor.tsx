@@ -547,12 +547,67 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
                 <Textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Digite o conteúdo HTML do grimório ou faça upload de um arquivo..."
+                  placeholder={`Digite o conteúdo HTML do grimório usando o formato correto:
+
+<div class="grimorio-conteudo">
+  <h2 class="grimorio-titulo">Título do Grimório</h2>
+  <p class="grimorio-subtitulo">Subtítulo opcional</p>
+  
+  <div class="section">
+    <h3>Capítulo 1</h3>
+    <p>Conteúdo do capítulo...</p>
+  </div>
+  
+  <div class="section">
+    <h3>Capítulo 2</h3>
+    <p>Mais conteúdo...</p>
+  </div>
+</div>`}
                   className="w-full h-96 font-mono text-sm resize-none bg-black/50 border-amber-500/30 text-amber-100 placeholder:text-amber-300/50"
                 />
-                <p className="text-xs text-amber-300/70 mt-2">
-                  Use HTML para formatação. Exemplo: &lt;h2&gt;Capítulo&lt;/h2&gt; &lt;p&gt;texto&lt;/p&gt;
-                </p>
+                <div className="mt-2 space-y-1">
+                  <p className="text-xs text-amber-300/70">
+                    Use o formato de grimório com classes CSS específicas para paginação correta
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const template = `<div class="grimorio-conteudo">
+  <h2 class="grimorio-titulo">${title || 'Título do Grimório'}</h2>
+  <p class="grimorio-subtitulo">Subtítulo opcional</p>
+  
+  <div class="section">
+    <h3>Introdução</h3>
+    <p>Conteúdo introdutório do grimório...</p>
+  </div>
+  
+  <div class="section">
+    <h3>Capítulo 1 - Primeiros Passos</h3>
+    <p>Conteúdo do primeiro capítulo...</p>
+    <p>Mais parágrafos com ensinamentos...</p>
+  </div>
+  
+  <div class="section">
+    <h3>Capítulo 2 - Práticas Avançadas</h3>
+    <p>Conteúdo do segundo capítulo...</p>
+  </div>
+  
+  <div class="section">
+    <h3>Conclusão</h3>
+    <p>Palavras finais e reflexões...</p>
+  </div>
+</div>`;
+                        setContent(template);
+                      }}
+                      className="text-xs border-amber-500/30 text-amber-200 hover:bg-amber-500/10"
+                    >
+                      Usar Template
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
 
