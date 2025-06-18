@@ -106,6 +106,8 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
     setAiGenerating(true);
     
     try {
+      console.log('Iniciando geração com IA:', { prompt: aiPrompt, sectionId, title });
+      
       const token = localStorage.getItem('auth_token');
       const response = await fetch('/api/admin/generate-grimoire', {
         method: 'POST',
@@ -120,14 +122,20 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
         })
       });
 
+      console.log('Resposta da API:', response.status, response.statusText);
+
       if (!response.ok) {
-        throw new Error('Erro ao gerar grimório com IA');
+        const errorText = await response.text();
+        console.error('Erro da API:', errorText);
+        throw new Error(`Erro ${response.status}: ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('Dados recebidos:', data);
       
       setContent(data.content);
       if (!title) setTitle(data.title || 'Grimório Gerado por IA');
+      if (data.excerpt) setExcerpt(data.excerpt);
       setActiveTab('content');
       
       toast({
@@ -136,9 +144,10 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
       });
       
     } catch (error: any) {
+      console.error('Erro completo:', error);
       toast({
-        title: "Erro",
-        description: error.message || "Erro ao gerar grimório com IA",
+        title: "Erro ao gerar grimório",
+        description: error.message || "Erro desconhecido ao comunicar com a IA",
         variant: "destructive",
       });
     } finally {
