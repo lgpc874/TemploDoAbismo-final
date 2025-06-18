@@ -17,6 +17,7 @@ import jwt from "jsonwebtoken";
 import { supabaseServiceNew as supabaseService } from "./supabase-service-new";
 import PDFGenerator from "./pdf-generator";
 import { AdvancedPDFGenerator } from "./advanced-pdf-generator";
+import { ReliablePDFGenerator } from "./reliable-pdf-generator";
 
 const JWT_SECRET = process.env.JWT_SECRET || "templo_abismo_secret_key";
 
@@ -284,15 +285,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         console.log("PDF generated with Puppeteer");
       } catch (puppeteerError) {
-        console.log("Puppeteer failed, using advanced PDF generator:", (puppeteerError as Error).message);
-        // Fallback para geração avançada
-        pdfBuffer = AdvancedPDFGenerator.generateGrimoirePDF({
-          title: grimoire.title,
-          content: grimoire.content || '<p>Conteúdo não disponível</p>',
-          customCss: grimoire.custom_css || '',
-          includeImages: false
-        });
-        console.log("PDF generated with advanced generator");
+        console.log("Puppeteer failed, trying advanced PDF generator:", (puppeteerError as Error).message);
+        try {
+          // Fallback para geração avançada
+          pdfBuffer = AdvancedPDFGenerator.generateGrimoirePDF({
+            title: grimoire.title,
+            content: grimoire.content || '<p>Conteúdo não disponível</p>',
+            customCss: grimoire.custom_css || '',
+            includeImages: false
+          });
+          console.log("PDF generated with advanced generator");
+        } catch (advancedError) {
+          console.log("Advanced generator failed, using reliable generator:", (advancedError as Error).message);
+          // Fallback final para gerador confiável
+          pdfBuffer = ReliablePDFGenerator.generatePDF({
+            title: grimoire.title,
+            content: grimoire.content || '<p>Conteúdo não disponível</p>',
+            author: "Templo do Abismo"
+          });
+          console.log("PDF generated with reliable generator");
+        }
       }
 
       console.log("PDF generated successfully, size:", pdfBuffer.length);
