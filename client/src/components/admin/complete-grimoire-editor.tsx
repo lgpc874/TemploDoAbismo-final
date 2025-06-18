@@ -113,7 +113,7 @@ export default function CompleteGrimoireEditor({ grimoire, onClose }: CompleteGr
         body: JSON.stringify({
           title,
           content,
-          excerpt,
+          description: excerpt || title, // Usar excerpt como description, ou título se vazio
           section_id: sectionId,
           is_published: false,
           custom_css: customCss + '\n' + generateBackgroundCss(),
