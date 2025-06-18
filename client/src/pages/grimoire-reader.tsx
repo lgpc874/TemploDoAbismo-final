@@ -64,6 +64,31 @@ export default function GrimoireReader() {
     },
   });
 
+  // Aplicar CSS personalizado do grimório
+  useEffect(() => {
+    if (grimoire?.custom_css) {
+      // Remover CSS anterior se existir
+      const existingStyle = document.getElementById('grimoire-custom-css');
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+
+      // Criar novo elemento style
+      const style = document.createElement('style');
+      style.id = 'grimoire-custom-css';
+      style.textContent = grimoire.custom_css;
+      document.head.appendChild(style);
+
+      // Cleanup quando component desmonta ou grimório muda
+      return () => {
+        const styleToRemove = document.getElementById('grimoire-custom-css');
+        if (styleToRemove) {
+          styleToRemove.remove();
+        }
+      };
+    }
+  }, [grimoire?.custom_css]);
+
   // Função para extrair cor de fundo de uma seção HTML
   const extractBackgroundColor = (content: string): string | null => {
     // Procurar por elementos com background-color definido
