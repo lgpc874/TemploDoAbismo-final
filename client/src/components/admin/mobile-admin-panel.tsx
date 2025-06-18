@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Grimoire, LibrarySection } from '@shared/schema';
-import GrimoireCompleteEditor from './grimoire-complete-editor';
+import GrimoireEditorFixed from './grimoire-editor-fixed';
 import SectionEditor from './section-editor';
 
 interface MobileAdminPanelProps {
@@ -171,10 +171,9 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
 
   if (showGrimoireEditor) {
     return (
-      <GrimoireCompleteEditor 
+      <GrimoireEditorFixed 
         grimoire={editingGrimoire || undefined}
         onClose={handleCloseEditor}
-        onSave={handleCloseEditor}
       />
     );
   }
