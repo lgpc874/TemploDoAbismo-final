@@ -14,10 +14,10 @@ async function addIconUrlColumn() {
   try {
     console.log('Verificando estrutura da tabela library_sections...');
     
-    // Testar se a coluna icon_url já existe
+    // Testar estrutura atual da tabela
     const { data, error } = await supabase
       .from('library_sections')
-      .select('id, name, description, icon_name, sort_order, is_active, color_scheme, access_level, icon_url')
+      .select('*')
       .limit(1);
     
     if (error) {
