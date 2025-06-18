@@ -25,6 +25,7 @@ export const library_sections = pgTable("library_sections", {
   name: text("name").notNull().unique(),
   description: text("description"),
   icon_name: text("icon_name"),
+  icon_url: text("icon_url"),
   sort_order: integer("sort_order").default(0),
   is_active: boolean("is_active").default(true),
   color_scheme: text("color_scheme").default("#D97706"),

@@ -45,7 +45,8 @@ export default function SectionEditor({ section, isOpen, onClose }: SectionEdito
         description: section.description || '',
         icon_name: section.icon_name || '📚',
         sort_order: section.sort_order || 1,
-        color_scheme: section.color_scheme || '#D97706'
+        color_scheme: section.color_scheme || '#D97706',
+        icon_url: section.icon_url || ''
       });
     } else {
       setFormData({
@@ -53,7 +54,8 @@ export default function SectionEditor({ section, isOpen, onClose }: SectionEdito
         description: '',
         icon_name: '📚',
         sort_order: 1,
-        color_scheme: '#D97706'
+        color_scheme: '#D97706',
+        icon_url: ''
       });
     }
   }, [section]);

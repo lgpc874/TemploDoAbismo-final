@@ -49,32 +49,59 @@ export class ReliablePDFGenerator {
   }
   
   private static splitIntoPages(text: string, linesPerPage: number): string[] {
-    const words = text.split(' ');
+    const lines = text.split('\n');
     const pages: string[] = [];
-    let currentPage = '';
-    let currentLines = 0;
+    let currentPage: string[] = [];
+    let currentLineCount = 0;
     
-    for (const word of words) {
-      const testLine = currentPage + (currentPage ? ' ' : '') + word;
+    for (const line of lines) {
+      // Dividir linhas muito longas
+      const wrappedLines = this.wrapLine(line, 80);
       
-      // Estimar linhas baseado no comprimento (aproximadamente 80 caracteres por linha)
-      const estimatedLines = Math.ceil(testLine.length / 80);
-      
-      if (estimatedLines > linesPerPage && currentPage) {
-        pages.push(currentPage);
-        currentPage = word;
-        currentLines = 1;
-      } else {
-        currentPage = testLine;
-        currentLines = estimatedLines;
+      for (const wrappedLine of wrappedLines) {
+        if (currentLineCount >= linesPerPage && currentPage.length > 0) {
+          pages.push(currentPage.join('\n'));
+          currentPage = [];
+          currentLineCount = 0;
+        }
+        
+        currentPage.push(wrappedLine);
+        currentLineCount++;
       }
     }
     
-    if (currentPage) {
-      pages.push(currentPage);
+    if (currentPage.length > 0) {
+      pages.push(currentPage.join('\n'));
     }
     
-    return pages;
+    return pages.length > 0 ? pages : [text];
+  }
+  
+  private static wrapLine(line: string, maxLength: number): string[] {
+    if (line.length <= maxLength) {
+      return [line];
+    }
+    
+    const words = line.split(' ');
+    const wrapped: string[] = [];
+    let currentLine = '';
+    
+    for (const word of words) {
+      if (currentLine.length + word.length + 1 <= maxLength) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        if (currentLine) {
+          wrapped.push(currentLine);
+        }
+        currentLine = word;
+      }
+    }
+    
+    if (currentLine) {
+      wrapped.push(currentLine);
+    }
+    
+    return wrapped.length > 0 ? wrapped : [line];
   }
   
   private static createPDFDocument(title: string, pages: string[], author: string): string {
