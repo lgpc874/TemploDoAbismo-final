@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,14 +29,14 @@ export default function GrimoireEditorFixed({ grimoire, onClose }: GrimoireEdito
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<FormData>(() => ({
     title: grimoire?.title || '',
     content: grimoire?.content || '',
     excerpt: grimoire?.excerpt || '',
     section_id: grimoire?.section_id || 1,
     is_published: grimoire?.is_published || false,
     cover_image_url: grimoire?.cover_image_url || ''
-  });
+  }));
 
   // Buscar seções
   const { data: sections = [] } = useQuery<LibrarySection[]>({
