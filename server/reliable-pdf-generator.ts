@@ -175,12 +175,23 @@ export class ReliablePDFGenerator {
     // Conteúdo principal
     content += '/F1 11 Tf\n';
     const lines = text.split('\n');
+    let currentY = pageNum === 1 ? 650 : 720; // Começar mais baixo na primeira página
+    
     for (const line of lines) {
+      if (currentY < 50) break; // Parar se chegou no fim da página
+      
       if (line.trim()) {
-        content += `(${this.escapePDFString(line.substring(0, 80))}) Tj\n`;
-        content += '0 -15 Td\n';
+        // Dividir linha longa em várias linhas
+        const wrappedLines = ReliablePDFGenerator.wrapLineForPDF(line, 80);
+        for (const wrappedLine of wrappedLines) {
+          if (currentY < 50) break;
+          content += `(${ReliablePDFGenerator.escapePDFString(wrappedLine)}) Tj\n`;
+          content += '0 -15 Td\n';
+          currentY -= 15;
+        }
       } else {
         content += '0 -10 Td\n';
+        currentY -= 10;
       }
     }
     
@@ -193,12 +204,39 @@ export class ReliablePDFGenerator {
     return content;
   }
   
+  private static wrapLineForPDF(line: string, maxLength: number): string[] {
+    if (line.length <= maxLength) {
+      return [line];
+    }
+    
+    const words = line.split(' ');
+    const wrapped: string[] = [];
+    let currentLine = '';
+    
+    for (const word of words) {
+      if (currentLine.length + word.length + 1 <= maxLength) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        if (currentLine) {
+          wrapped.push(currentLine);
+        }
+        currentLine = word.length > maxLength ? word.substring(0, maxLength) : word;
+      }
+    }
+    
+    if (currentLine) {
+      wrapped.push(currentLine);
+    }
+    
+    return wrapped.length > 0 ? wrapped : [line.substring(0, maxLength)];
+  }
+
   private static escapePDFString(str: string): string {
     return str
       .replace(/\\/g, '\\\\')
       .replace(/\(/g, '\\(')
       .replace(/\)/g, '\\)')
       .replace(/[\r\n]/g, ' ')
-      .substring(0, 100); // Limitar tamanho
+      .substring(0, 200); // Aumentar limite para incluir mais texto
   }
 }
