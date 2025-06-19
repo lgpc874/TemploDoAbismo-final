@@ -190,13 +190,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Limpar e validar dados
+      // Tratar campos enviados pelo frontend (pode vir color_scheme ou color)
+      const color = req.body.color || req.body.color_scheme || '#D97706';
+      const icon = req.body.icon || req.body.icon_name || '📚';
+      
+      // Limpar e validar dados  
       const cleanedData = {
         name: req.body.name?.trim(),
         description: req.body.description?.trim() || null,
-        icon_name: req.body.icon_name?.trim() || '📚',
-        icon_url: req.body.icon_url?.trim() || null,
-        color_scheme: req.body.color_scheme?.trim() || '#D97706',
+        icon: icon.trim(),
+        color: color.trim(),
         sort_order: parseInt(req.body.sort_order) || 1
       };
       

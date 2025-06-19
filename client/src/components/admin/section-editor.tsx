@@ -19,19 +19,18 @@ interface SectionEditorProps {
 interface SectionFormData {
   name: string;
   description: string;
-  icon_name: string;
+  icon: string;
   sort_order: number;
-  color_scheme: string;
-  icon_url?: string;
+  color: string;
 }
 
 export default function SectionEditor({ section, isOpen, onClose }: SectionEditorProps) {
   const [formData, setFormData] = useState<SectionFormData>({
     name: '',
     description: '',
-    icon_name: '📚',
+    icon: '📚',
     sort_order: 1,
-    color_scheme: '#D97706'
+    color: '#D97706'
   });
 
   const { toast } = useToast();
@@ -43,19 +42,17 @@ export default function SectionEditor({ section, isOpen, onClose }: SectionEdito
       setFormData({
         name: section.name || '',
         description: section.description || '',
-        icon_name: section.icon_name || '📚',
+        icon: section.icon || '📚',
         sort_order: section.sort_order || 1,
-        color_scheme: section.color_scheme || '#D97706',
-        icon_url: section.icon_url || ''
+        color: section.color || '#D97706'
       });
     } else {
       setFormData({
         name: '',
         description: '',
-        icon_name: '📚',
+        icon: '📚',
         sort_order: 1,
-        color_scheme: '#D97706',
-        icon_url: ''
+        color: '#D97706'
       });
     }
   }, [section]);
@@ -168,13 +165,13 @@ export default function SectionEditor({ section, isOpen, onClose }: SectionEdito
                   <div className="flex gap-2">
                     <Input
                       type="color"
-                      value={formData.color_scheme}
-                      onChange={(e) => handleInputChange('color_scheme', e.target.value)}
+                      value={formData.color}
+                      onChange={(e) => handleInputChange('color', e.target.value)}
                       className="w-16 h-10 bg-black/50 border-amber-500/30 rounded cursor-pointer"
                     />
                     <Input
-                      value={formData.color_scheme}
-                      onChange={(e) => handleInputChange('color_scheme', e.target.value)}
+                      value={formData.color}
+                      onChange={(e) => handleInputChange('color', e.target.value)}
                       placeholder="#D97706"
                       className="flex-1 bg-black/50 border-amber-500/30 text-amber-100"
                     />
@@ -182,26 +179,14 @@ export default function SectionEditor({ section, isOpen, onClose }: SectionEdito
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-amber-200 text-sm">Ícone (Emoji)</Label>
-                  <Input
-                    value={formData.icon_name}
-                    onChange={(e) => handleInputChange('icon_name', e.target.value)}
-                    placeholder="📚"
-                    className="bg-black/50 border-amber-500/30 text-amber-100"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label className="text-amber-200 text-sm">URL do Ícone (Opcional)</Label>
-                  <Input
-                    value={formData.icon_url || ''}
-                    onChange={(e) => handleInputChange('icon_url', e.target.value)}
-                    placeholder="https://exemplo.com/icone.png"
-                    className="bg-black/50 border-amber-500/30 text-amber-100"
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label className="text-amber-200 text-sm">Ícone (Emoji)</Label>
+                <Input
+                  value={formData.icon}
+                  onChange={(e) => handleInputChange('icon', e.target.value)}
+                  placeholder="📚"
+                  className="bg-black/50 border-amber-500/30 text-amber-100"
+                />
               </div>
 
               <div className="space-y-2">
