@@ -44,6 +44,15 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Get current section color
+  const getCurrentSectionColor = () => {
+    if (selectedSection) {
+      const section = sections.find(s => s.id === selectedSection);
+      return section?.color || '#D97706';
+    }
+    return '#D97706'; // Default golden color
+  };
+
   // Consultar seções da biblioteca
   const { data: sections = [] } = useQuery<LibrarySection[]>({
     queryKey: ['/api/library-sections'],
@@ -185,10 +194,16 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
         {/* Header Mobile-First */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-amber-400 mb-1">
+            <h1 
+              className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 transition-colors duration-300"
+              style={{ color: getCurrentSectionColor() }}
+            >
               🏛️ Painel Administrativo
             </h1>
-            <p className="text-amber-200/70 text-sm sm:text-base">
+            <p 
+              className="text-sm sm:text-base opacity-70 transition-colors duration-300"
+              style={{ color: getCurrentSectionColor() }}
+            >
               Gerenciar grimórios e seções da biblioteca
             </p>
           </div>
@@ -207,45 +222,81 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
 
         {/* Stats Cards - Mobile Stack */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
-          <Card className="bg-black/50 border-amber-500/30">
+          <Card 
+            className="bg-black/50 transition-colors duration-300"
+            style={{ borderColor: `${getCurrentSectionColor()}30` }}
+          >
             <CardContent className="p-3 sm:p-4 text-center">
-              <div className="text-lg sm:text-2xl font-bold text-amber-400">
+              <div 
+                className="text-lg sm:text-2xl font-bold transition-colors duration-300"
+                style={{ color: getCurrentSectionColor() }}
+              >
                 {stats.totalGrimoires}
               </div>
-              <div className="text-xs sm:text-sm text-amber-200/70">
+              <div 
+                className="text-xs sm:text-sm opacity-70 transition-colors duration-300"
+                style={{ color: getCurrentSectionColor() }}
+              >
                 Total
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-black/50 border-green-500/30">
+          <Card 
+            className="bg-black/50 transition-colors duration-300"
+            style={{ borderColor: `${getCurrentSectionColor()}30` }}
+          >
             <CardContent className="p-3 sm:p-4 text-center">
-              <div className="text-lg sm:text-2xl font-bold text-green-400">
+              <div 
+                className="text-lg sm:text-2xl font-bold transition-colors duration-300"
+                style={{ color: getCurrentSectionColor() }}
+              >
                 {stats.publishedGrimoires}
               </div>
-              <div className="text-xs sm:text-sm text-green-200/70">
+              <div 
+                className="text-xs sm:text-sm opacity-70 transition-colors duration-300"
+                style={{ color: getCurrentSectionColor() }}
+              >
                 Publicados
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-black/50 border-orange-500/30">
+          <Card 
+            className="bg-black/50 transition-colors duration-300"
+            style={{ borderColor: `${getCurrentSectionColor()}30` }}
+          >
             <CardContent className="p-3 sm:p-4 text-center">
-              <div className="text-lg sm:text-2xl font-bold text-orange-400">
+              <div 
+                className="text-lg sm:text-2xl font-bold transition-colors duration-300"
+                style={{ color: getCurrentSectionColor() }}
+              >
                 {stats.draftGrimoires}
               </div>
-              <div className="text-xs sm:text-sm text-orange-200/70">
+              <div 
+                className="text-xs sm:text-sm opacity-70 transition-colors duration-300"
+                style={{ color: getCurrentSectionColor() }}
+              >
                 Rascunhos
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-black/50 border-purple-500/30">
+          <Card 
+            className="bg-black/50 transition-colors duration-300"
+            style={{ borderColor: `${getCurrentSectionColor()}30` }}
+          >
             <CardContent className="p-3 sm:p-4 text-center">
-              <div className="text-lg sm:text-2xl font-bold text-purple-400">
+              <div 
+                className="text-lg sm:text-2xl font-bold transition-colors duration-300"
+                style={{ color: getCurrentSectionColor() }}
+              >
                 {stats.totalSections}
               </div>
-              <div className="text-xs sm:text-sm text-purple-200/70">
+              <div 
+                className="text-xs sm:text-sm opacity-70 transition-colors duration-300"
+                style={{ color: getCurrentSectionColor() }}
+              >
                 Seções
               </div>
             </CardContent>
@@ -254,10 +305,17 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
 
         {/* Tabs Navigation - Mobile Scroll */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-black/50 border border-amber-500/30 mb-4">
+          <TabsList 
+            className="grid w-full grid-cols-3 bg-black/50 border mb-4 transition-colors duration-300"
+            style={{ borderColor: `${getCurrentSectionColor()}30` }}
+          >
             <TabsTrigger 
               value="grimoires" 
-              className="text-xs sm:text-sm data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400"
+              className="text-xs sm:text-sm transition-colors duration-300"
+              style={{
+                color: activeTab === 'grimoires' ? getCurrentSectionColor() : '#9CA3AF',
+                backgroundColor: activeTab === 'grimoires' ? `${getCurrentSectionColor()}20` : 'transparent'
+              }}
             >
               <BookOpen className="w-4 h-4 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Grimórios</span>
@@ -265,7 +323,11 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
             </TabsTrigger>
             <TabsTrigger 
               value="sections" 
-              className="text-xs sm:text-sm data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400"
+              className="text-xs sm:text-sm transition-colors duration-300"
+              style={{
+                color: activeTab === 'sections' ? getCurrentSectionColor() : '#9CA3AF',
+                backgroundColor: activeTab === 'sections' ? `${getCurrentSectionColor()}20` : 'transparent'
+              }}
             >
               <Folder className="w-4 h-4 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Seções</span>
@@ -273,7 +335,11 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
             </TabsTrigger>
             <TabsTrigger 
               value="analytics" 
-              className="text-xs sm:text-sm data-[state=active]:bg-amber-500/20 data-[state=active]:text-amber-400"
+              className="text-xs sm:text-sm transition-colors duration-300"
+              style={{
+                color: activeTab === 'analytics' ? getCurrentSectionColor() : '#9CA3AF',
+                backgroundColor: activeTab === 'analytics' ? `${getCurrentSectionColor()}20` : 'transparent'
+              }}
             >
               <BarChart3 className="w-4 h-4 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Analytics</span>
@@ -287,19 +353,30 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
             {/* Search & Filters - Mobile Stack */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-amber-400 w-4 h-4" />
+                <Search 
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 transition-colors duration-300" 
+                  style={{ color: getCurrentSectionColor() }}
+                />
                 <Input
                   placeholder="Buscar grimórios..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-black/50 border-amber-500/30 text-amber-100 text-sm sm:text-base"
+                  className="pl-10 bg-black/50 text-sm sm:text-base transition-colors duration-300"
+                  style={{ 
+                    borderColor: `${getCurrentSectionColor()}30`,
+                    color: getCurrentSectionColor()
+                  }}
                 />
               </div>
               
               <select
                 value={selectedSection || ''}
                 onChange={(e) => setSelectedSection(e.target.value ? parseInt(e.target.value) : null)}
-                className="bg-black/50 border border-amber-500/30 text-amber-100 rounded-md px-3 py-2 text-sm sm:text-base min-w-0 sm:min-w-[150px]"
+                className="bg-black/50 border rounded-md px-3 py-2 text-sm sm:text-base min-w-0 sm:min-w-[150px] transition-colors duration-300"
+                style={{
+                  borderColor: `${getCurrentSectionColor()}30`,
+                  color: getCurrentSectionColor()
+                }}
               >
                 <option value="">Todas Seções</option>
                 {sections.map(section => (
@@ -311,7 +388,16 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
               
               <Button 
                 onClick={handleNewGrimoire}
-                className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-black"
+                className="w-full sm:w-auto text-black transition-colors duration-300"
+                style={{
+                  backgroundColor: getCurrentSectionColor()
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = `${getCurrentSectionColor()}CC`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = getCurrentSectionColor();
+                }}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 <span className="sm:hidden">Novo</span>
@@ -321,38 +407,63 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
 
             {/* Grimoires Grid - Mobile Responsive */}
             {loadingGrimoires ? (
-              <div className="text-center py-8 text-amber-200">
+              <div 
+                className="text-center py-8 transition-colors duration-300"
+                style={{ color: getCurrentSectionColor() }}
+              >
                 Carregando grimórios...
               </div>
             ) : filteredGrimoires.length === 0 ? (
-              <div className="text-center py-8 text-amber-200/70">
+              <div 
+                className="text-center py-8 opacity-70 transition-colors duration-300"
+                style={{ color: getCurrentSectionColor() }}
+              >
                 Nenhum grimório encontrado
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                {filteredGrimoires.map((grimoire) => (
-                  <Card key={grimoire.id} className="bg-black/50 border-amber-500/30 hover:border-amber-500/50 transition-all">
-                    <CardHeader className="p-3 sm:p-4">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-amber-400 text-sm sm:text-base truncate">
-                            {grimoire.title}
-                          </CardTitle>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            <Badge 
-                              variant={grimoire.is_published ? "default" : "secondary"}
-                              className="text-xs"
+                {filteredGrimoires.map((grimoire) => {
+                  const grimoireSection = sections.find(s => s.id === grimoire.section_id);
+                  const grimoireSectionColor = grimoireSection?.color || getCurrentSectionColor();
+                  
+                  return (
+                    <Card 
+                      key={grimoire.id} 
+                      className="bg-black/50 hover:scale-[1.02] transition-all duration-300"
+                      style={{
+                        borderColor: `${grimoireSectionColor}30`
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = `${grimoireSectionColor}50`;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = `${grimoireSectionColor}30`;
+                      }}
+                    >
+                      <CardHeader className="p-3 sm:p-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <CardTitle 
+                              className="text-sm sm:text-base truncate transition-colors duration-300"
+                              style={{ color: grimoireSectionColor }}
                             >
-                              {grimoire.is_published ? "Publicado" : "Rascunho"}
-                            </Badge>
-                            {grimoire.is_paid && (
-                              <Badge variant="outline" className="text-xs border-green-400 text-green-400">
-                                Pago
+                              {grimoire.title}
+                            </CardTitle>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              <Badge 
+                                variant={grimoire.is_published ? "default" : "secondary"}
+                                className="text-xs"
+                              >
+                                {grimoire.is_published ? "Publicado" : "Rascunho"}
                               </Badge>
-                            )}
+                              {grimoire.is_paid && (
+                                <Badge variant="outline" className="text-xs border-green-400 text-green-400">
+                                  Pago
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
                       
                       {grimoire.excerpt && (
                         <p className="text-amber-200/70 text-xs sm:text-sm line-clamp-2 mt-2">
@@ -396,7 +507,8 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
                       </div>
                     </CardContent>
                   </Card>
-                ))}
+                );
+              })}
               </div>
             )}
           </TabsContent>
@@ -408,7 +520,8 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
             <div className="flex justify-end">
               <Button 
                 onClick={handleNewSection}
-                className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-black"
+                className="w-full sm:w-auto text-black transition-colors duration-300"
+                style={{ backgroundColor: getCurrentSectionColor() }}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 <span className="sm:hidden">Nova Seção</span>
@@ -419,16 +532,28 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {sections.map((section) => {
                 const sectionGrimoires = grimoires.filter(g => g.section_id === section.id);
+                const sectionColor = section.color || '#D97706';
+                
                 return (
-                  <Card key={section.id} className="bg-black/50 border-amber-500/30 hover:border-amber-500/50 transition-all">
+                  <Card 
+                    key={section.id} 
+                    className="bg-black/50 hover:scale-[1.02] transition-all duration-300"
+                    style={{ borderColor: `${sectionColor}30` }}
+                  >
                     <CardHeader className="p-3 sm:p-4">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-amber-400 text-sm sm:text-base flex items-center gap-2">
-                            <span className="text-lg">{section.icon_name || '📚'}</span>
+                          <CardTitle 
+                            className="text-sm sm:text-base flex items-center gap-2 transition-colors duration-300"
+                            style={{ color: sectionColor }}
+                          >
+                            <span className="text-lg">{section.icon || '📚'}</span>
                             <span className="truncate">{section.name}</span>
                           </CardTitle>
-                          <p className="text-amber-200/70 text-xs sm:text-sm mt-1">
+                          <p 
+                            className="text-xs sm:text-sm mt-1 opacity-70 transition-colors duration-300"
+                            style={{ color: sectionColor }}
+                          >
                             {sectionGrimoires.length} grimório(s)
                           </p>
                         </div>
@@ -437,7 +562,10 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
                     
                     <CardContent className="p-3 sm:p-4 pt-0">
                       {section.description && (
-                        <p className="text-amber-200/60 text-xs sm:text-sm line-clamp-2 mb-3">
+                        <p 
+                          className="text-xs sm:text-sm line-clamp-2 mb-3 opacity-60 transition-colors duration-300"
+                          style={{ color: sectionColor }}
+                        >
                           {section.description}
                         </p>
                       )}
@@ -447,7 +575,11 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
                           onClick={() => handleEditSection(section)}
                           size="sm"
                           variant="outline"
-                          className="flex-1 text-xs sm:text-sm"
+                          className="flex-1 text-xs sm:text-sm transition-colors duration-300"
+                          style={{
+                            borderColor: `${sectionColor}50`,
+                            color: sectionColor
+                          }}
                         >
                           <Edit3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                           Editar

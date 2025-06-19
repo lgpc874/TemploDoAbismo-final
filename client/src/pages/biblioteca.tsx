@@ -223,7 +223,12 @@ export default function Biblioteca() {
           
           {/* Título e frase */}
           <div className="text-center mb-8">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-cinzel text-golden-amber tracking-wider mb-4">
+            <h1 
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-cinzel tracking-wider mb-4 transition-colors duration-500"
+              style={{ 
+                color: (sections as LibrarySection[]).find(s => s.id === activeSection)?.color || '#D97706' 
+              }}
+            >
               BIBLIOTHECA ARCANA
             </h1>
             <p className="text-sm sm:text-base text-ritualistic-beige/80 max-w-2xl mx-auto px-4">
@@ -238,16 +243,35 @@ export default function Biblioteca() {
                 {(sections as LibrarySection[]).map((section: LibrarySection) => {
                   const IconComponent = getSectionIcon(section);
                   const grimoireCount = (allGrimoires as Grimoire[]).filter((g: Grimoire) => g.section_id === section.id).length;
+                  const sectionColor = section.color || '#D97706';
+                  const isActive = activeSection === section.id;
                   
                   return (
                     <TabsTrigger
                       key={section.id}
                       value={section.id.toString()}
-                      className="flex flex-col items-center p-3 sm:p-4 space-y-2 data-[state=active]:bg-red-900/50 data-[state=active]:text-golden-amber hover:bg-red-900/30 transition-all duration-300 border border-golden-amber/20 rounded-lg bg-black/30 backdrop-blur-sm"
+                      className="flex flex-col items-center p-3 sm:p-4 space-y-2 data-[state=active]:bg-red-900/50 hover:bg-red-900/30 transition-all duration-300 border rounded-lg bg-black/30 backdrop-blur-sm"
+                      style={{
+                        color: isActive ? sectionColor : '#D97706',
+                        borderColor: isActive ? `${sectionColor}40` : '#D9770640'
+                      }}
                     >
-                      <IconComponent size={20} className="text-golden-amber" />
-                      <span className="text-xs font-cinzel text-center leading-tight">{section.name}</span>
-                      <Badge variant="outline" className="text-xs border-golden-amber/30 text-golden-amber/70">
+                      <IconComponent 
+                        size={20} 
+                        className="transition-colors duration-300"
+                        style={{ color: isActive ? sectionColor : '#D97706' }}
+                      />
+                      <span className="text-xs font-cinzel text-center leading-tight transition-colors duration-300">
+                        {section.name}
+                      </span>
+                      <Badge 
+                        variant="outline" 
+                        className="text-xs transition-colors duration-300"
+                        style={{
+                          borderColor: `${sectionColor}50`,
+                          color: `${sectionColor}B3`
+                        }}
+                      >
                         {grimoireCount}
                       </Badge>
                     </TabsTrigger>
@@ -257,11 +281,15 @@ export default function Biblioteca() {
 
               {(sections as LibrarySection[]).map((section) => {
                 const sectionGrimoires = (allGrimoires as Grimoire[]).filter((g: Grimoire) => g.section_id === section.id);
+                const sectionColor = section.color || '#D97706';
                 
                 return (
                   <TabsContent key={section.id} value={section.id.toString()} className="mt-8">
                     <div className="mb-6">
-                      <h3 className="text-xl sm:text-2xl font-cinzel text-golden-amber mb-2 text-center">
+                      <h3 
+                        className="text-xl sm:text-2xl font-cinzel mb-2 text-center transition-colors duration-300"
+                        style={{ color: sectionColor }}
+                      >
                         {section.name}
                       </h3>
                       <p className="text-sm text-ritualistic-beige/70 text-center max-w-2xl mx-auto">
@@ -279,7 +307,18 @@ export default function Biblioteca() {
                             transition={{ duration: 0.3 }}
                             className="group"
                           >
-                            <Card className="bg-black/40 border-golden-amber/20 backdrop-blur-sm hover:border-golden-amber/40 transition-all duration-300 hover:scale-[1.02] cursor-pointer">
+                            <Card 
+                              className="bg-black/40 backdrop-blur-sm hover:scale-[1.02] cursor-pointer transition-all duration-300"
+                              style={{
+                                borderColor: `${sectionColor}30`
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = `${sectionColor}60`;
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = `${sectionColor}30`;
+                              }}
+                            >
                               <div className="flex p-4">
                                 {/* Capa à esquerda */}
                                 <div className="relative overflow-hidden rounded-lg mr-4 flex-shrink-0">
@@ -293,7 +332,10 @@ export default function Biblioteca() {
                                     </div>
                                   ) : (
                                     <div className="w-20 h-28 bg-gradient-to-b from-red-900/20 to-black/60 flex items-center justify-center rounded-lg">
-                                      <BookOpen className="h-6 w-6 text-golden-amber/50" />
+                                      <BookOpen 
+                                        className="h-6 w-6 opacity-50" 
+                                        style={{ color: sectionColor }}
+                                      />
                                     </div>
                                   )}
                                 </div>
@@ -302,27 +344,33 @@ export default function Biblioteca() {
                                 <div className="flex-1 flex flex-col justify-between">
                                   <div>
                                     <div className="flex items-start justify-between mb-2">
-                                      <h3 className="font-cinzel text-golden-amber text-lg font-semibold line-clamp-2 flex-1 mr-2">
+                                      <h3 
+                                        className="font-cinzel text-lg font-semibold line-clamp-2 flex-1 mr-2 transition-colors duration-300"
+                                        style={{ color: sectionColor }}
+                                      >
                                         {grimoire.title}
                                       </h3>
                                       {grimoire.is_paid && grimoire.price && (
-                                        <Badge className="bg-golden-amber/90 text-black font-semibold text-sm">
+                                        <Badge 
+                                          className="text-black font-semibold text-sm"
+                                          style={{ backgroundColor: `${sectionColor}E6` }}
+                                        >
                                           R$ {grimoire.price}
                                         </Badge>
                                       )}
                                     </div>
                                     
                                     <p className="text-ritualistic-beige/70 text-sm line-clamp-2 mb-3">
-                                      {grimoire.description}
+                                      {grimoire.content?.substring(0, 100) + '...'}
                                     </p>
                                     
                                     <div className="flex items-center space-x-4 text-xs text-ritualistic-beige/60 mb-3">
                                       <div className="flex items-center space-x-1">
                                         <Clock size={12} />
-                                        <span>{grimoire.estimated_reading_time || 0} min</span>
+                                        <span>{grimoire.estimated_read_time || 0} min</span>
                                       </div>
                                       <Badge className={`text-xs ${getDifficultyColor(1)}`}>
-                                        {grimoire.level || "iniciante"}
+                                        {grimoire.difficulty_level || "iniciante"}
                                       </Badge>
                                     </div>
                                   </div>
@@ -331,7 +379,11 @@ export default function Biblioteca() {
                                   <div className="flex justify-end">
                                     <Button 
                                       size="sm" 
-                                      className="bg-red-900/50 hover:bg-red-900/70 text-golden-amber border border-golden-amber/20 hover:border-golden-amber/40 px-6"
+                                      className="bg-red-900/50 hover:bg-red-900/70 px-6 transition-colors duration-300"
+                                      style={{
+                                        color: sectionColor,
+                                        borderColor: `${sectionColor}30`
+                                      }}
                                       onClick={() => handleGrimoireAction(grimoire)}
                                     >
                                       {getGrimoireState(grimoire).text}
