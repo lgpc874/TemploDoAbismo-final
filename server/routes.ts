@@ -174,12 +174,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/library-sections/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const updates = insertLibrarySectionSchema.partial().parse(req.body);
+      console.log('Atualizando seção ID:', id);
+      console.log('Dados recebidos:', req.body);
+      
+      // Validar dados de entrada
+      if (!id || isNaN(id)) {
+        return res.status(400).json({ error: "ID da seção inválido" });
+      }
+      
+      // Validar dados obrigatórios
+      const requiredFields = ['name'];
+      for (const field of requiredFields) {
+        if (!req.body[field] || !req.body[field].trim()) {
+          return res.status(400).json({ error: `Campo ${field} é obrigatório` });
+        }
+      }
+      
+      // Limpar e validar dados
+      const cleanedData = {
+        name: req.body.name?.trim(),
+        description: req.body.description?.trim() || null,
+        icon_name: req.body.icon_name?.trim() || '📚',
+        icon_url: req.body.icon_url?.trim() || null,
+        color_scheme: req.body.color_scheme?.trim() || '#D97706',
+        sort_order: parseInt(req.body.sort_order) || 1
+      };
+      
+      console.log('Dados limpos:', cleanedData);
+      
+      const updates = insertLibrarySectionSchema.partial().parse(cleanedData);
       const updatedSection = await supabaseService.updateLibrarySection(id, updates);
+      
+      console.log('Seção atualizada:', updatedSection);
       res.json(updatedSection);
     } catch (error: any) {
       console.error("Error updating section:", error);
-      res.status(400).json({ error: error.message });
+      console.error("Error stack:", error.stack);
+      res.status(400).json({ 
+        error: error.message,
+        details: error.name === 'ZodError' ? error.errors : undefined
+      });
     }
   });
 

@@ -67,6 +67,8 @@ export default function SectionEditor({ section, isOpen, onClose }: SectionEdito
       const method = section ? 'PUT' : 'POST';
       const token = localStorage.getItem('auth_token');
       
+      console.log('Salvando seção:', { endpoint, method, data });
+      
       const response = await fetch(endpoint, {
         method,
         headers: {
@@ -76,9 +78,20 @@ export default function SectionEditor({ section, isOpen, onClose }: SectionEdito
         body: JSON.stringify(data)
       });
       
+      console.log('Resposta do servidor:', response.status, response.statusText);
+      
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`Erro ao salvar seção: ${error}`);
+        let errorMessage = `Erro ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+          if (errorData.details) {
+            console.error('Detalhes do erro:', errorData.details);
+          }
+        } catch {
+          errorMessage = await response.text() || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
       
       return response.json();
@@ -93,9 +106,10 @@ export default function SectionEditor({ section, isOpen, onClose }: SectionEdito
       onClose();
     },
     onError: (error: any) => {
+      console.error('Erro completo na seção:', error);
       toast({
-        title: "Erro",
-        description: error.message || "Erro ao salvar seção",
+        title: "Erro ao salvar seção",
+        description: error.message || "Erro desconhecido",
         variant: "destructive",
       });
     },
