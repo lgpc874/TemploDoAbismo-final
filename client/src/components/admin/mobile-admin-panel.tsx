@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { extractTextFromHTML } from '@/lib/text-utils';
 import { 
   BookOpen, 
   Plus, 
@@ -467,7 +468,7 @@ export default function MobileAdminPanel({ onClose }: MobileAdminPanelProps) {
                       
                       {grimoire.excerpt && (
                         <p className="text-amber-200/70 text-xs sm:text-sm line-clamp-2 mt-2">
-                          {grimoire.excerpt}
+                          {extractTextFromHTML(grimoire.excerpt)}
                         </p>
                       )}
                     </CardHeader>

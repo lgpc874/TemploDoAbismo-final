@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { PageTransition } from "@/components/page-transition";
 import ContentProtection from "@/components/content-protection";
 import MysticalFooter from "@/components/mystical-footer";
+import { extractAndTruncateHTML } from "@/lib/text-utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -361,7 +362,7 @@ export default function Biblioteca() {
                                     </div>
                                     
                                     <p className="text-ritualistic-beige/70 text-sm line-clamp-2 mb-3">
-                                      {grimoire.content?.substring(0, 100) + '...'}
+                                      {extractAndTruncateHTML(grimoire.content, 100)}
                                     </p>
                                     
                                     <div className="flex items-center space-x-4 text-xs text-ritualistic-beige/60 mb-3">
